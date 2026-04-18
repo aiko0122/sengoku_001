@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25e25808146fdca4498d48ebfbfc92d2, type: 3}
+  m_Name: A-3
+  m_EditorClassIdentifier: 
+  provinceName: A-3
+  icon: {fileID: 21300000, guid: 20c37920b87a8fa4a983b711edebd239, type: 3}
+  neighbors:
+  - {fileID: 11400000, guid: 05ebbe0391b87ac45bcef8420bf4d1e7, type: 2}
+  - {fileID: 11400000, guid: 2aebdd8f627f2c841b7f5ed7a05f610e, type: 2}
+  isGate: 0
+  requiredProvinces: []
+  defenseValue: 10
+  initialCharacters:
+  - {fileID: 11400000, guid: dfd8e3a560974e64aa2ad7cae309cdf5, type: 2}
+  - {fileID: 11400000, guid: 66e9eea4c5eab354a9848a121e2795bd, type: 2}
