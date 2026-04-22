@@ -27,3 +27,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: cf9fb3c02aec17c46abc0fb7d8ef7786, type: 2}
   - {fileID: 11400000, guid: 8ee49e3f77ab1d54b87678f5475184ef, type: 2}
   defenseValue: 20
+  initialDefenseLevel: 7
+  initialCharacterIds: []
+  income: 100

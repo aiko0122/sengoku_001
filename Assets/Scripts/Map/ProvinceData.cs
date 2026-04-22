@@ -38,8 +38,12 @@ public class ProvinceData : ScriptableObject
 
 	// 地域の防御力
 	public int defenseValue = 5;
+	public int initialDefenseLevel = 1;
 
-	public List<CharacterData>
-	initialCharacters =
-		new List<CharacterData>();
+	public List<string>
+	initialCharacterIds;
+
+	[Header("経済")]
+	public int income = 100;
+
 }

@@ -19,7 +19,9 @@ MonoBehaviour:
   isGate: 0
   requiredProvinces: []
   defenseValue: 5
-  initialCharacters:
-  - {fileID: 11400000, guid: 41ef1e4b6df1b4b4586593469f9d2088, type: 2}
-  - {fileID: 11400000, guid: 0007ad4f289ea274192e52fc4895f658, type: 2}
-  - {fileID: 11400000, guid: c0266bcc3c2d694479c3e73c2f8c4ba5, type: 2}
+  initialDefenseLevel: 5
+  initialCharacterIds:
+  - 001
+  - 002
+  - 003
+  income: 100

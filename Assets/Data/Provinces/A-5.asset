@@ -20,3 +20,6 @@ MonoBehaviour:
   isGate: 0
   requiredProvinces: []
   defenseValue: 5
+  initialDefenseLevel: 5
+  initialCharacterIds: []
+  income: 100

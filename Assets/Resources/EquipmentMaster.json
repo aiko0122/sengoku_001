@@ -1,0 +1,21 @@
+{
+    "equipments": [
+
+        {
+            "equipmentId": "katana",
+            "equipmentName": "刀",
+
+            "attackBonus": 5,
+            "defenseBonus": 0
+        },
+
+        {
+            "equipmentId": "armor",
+            "equipmentName": "鎧",
+
+            "attackBonus": 0,
+            "defenseBonus": 5
+        }
+
+    ]
+}

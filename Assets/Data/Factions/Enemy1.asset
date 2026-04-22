@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10391ed2b685fd14897cd041a62947c8, type: 3}
   m_Name: Enemy1
   m_EditorClassIdentifier: 
-  factionName: 
+  factionName: Enemy1
   factionColor: {r: 1, g: 0, b: 0, a: 1}
+  startingGold: 1000

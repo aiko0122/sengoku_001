@@ -16,7 +16,13 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 20c37920b87a8fa4a983b711edebd239, type: 3}
   neighbors:
   - {fileID: 11400000, guid: 05ebbe0391b87ac45bcef8420bf4d1e7, type: 2}
+  - {fileID: 11400000, guid: 8d9ea8baa1a7fbc4f95315d52106f5e3, type: 2}
   - {fileID: 11400000, guid: 2aebdd8f627f2c841b7f5ed7a05f610e, type: 2}
   isGate: 0
   requiredProvinces: []
   defenseValue: 5
+  initialDefenseLevel: 5
+  initialCharacterIds:
+  - 004
+  - 005
+  income: 100

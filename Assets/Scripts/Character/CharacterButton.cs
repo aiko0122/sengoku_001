@@ -10,6 +10,9 @@ public class CharacterButton : MonoBehaviour
 	[SerializeField]
 	Image backgroundImage;
 
+	[SerializeField]
+	Button reinforceButton;
+
 	CharacterRuntimeData character;
 
 	MapManager mapManager;
@@ -29,14 +32,23 @@ public class CharacterButton : MonoBehaviour
 		mapManager = manager;
 
 		nameText.text =
-			ch.baseData.characterName;
+			//ch.baseData.characterName;
+			character.characterName
+			+ " (" +
+			character.soldierCount +
+			"人)";
 
 		// 初期色
 		SetNormal();
 
+		reinforceButton.onClick.RemoveAllListeners();
+
+		reinforceButton.onClick
+			.AddListener(OnReinforceClicked);
+
 	}
 
-	public void OnClick()
+	public void OnCharacterClick()
 	{
 		// ★ トグル動作
 		isSelected = !isSelected;
@@ -72,5 +84,13 @@ public class CharacterButton : MonoBehaviour
 	{
 		isSelected = false;
 		SetNormal();
+	}
+
+	public void OnReinforceClicked()
+	{
+		Debug.Log("ReinforceButtonクリック");
+
+		mapManager.ReinforceCharacter(
+			character);
 	}
 }

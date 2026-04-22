@@ -1,25 +1,53 @@
-// キャラの実行中データ
+using System.Collections.Generic;
+using UnityEngine;
 
+[System.Serializable]
 public class CharacterRuntimeData
 {
-	public CharacterData baseData;
+	public string characterId;
+	public string characterName;
+	//public Sprite portrait; // ←追加
 
-	// コンストラクタ
-	public CharacterRuntimeData(
-		CharacterData data)
-	{
-		baseData = data;
-	}
+	public int leadership;
+	public int soldierCount;
+
+	public List<string> skillIds;
+	public string equipmentId;
+
+	public float levelUpRate;
+
+	public int attack;
+	public int defense;
+
+	public int battleCount;
+
+	public FactionRuntimeData faction;
 
 	// 攻撃値取得
 	public int GetAttack()
 	{
-		return baseData.attackPower;
+		int ret = 0;
+		//return baseData.attackPower;
+
+		ret = attack + (soldierCount * leadership / 100);
+		return ret;
 	}
 
 	// 防御値取得
 	public int GetDefense()
 	{
-		return baseData.defensePower;
+		int ret = 0;
+		//return baseData.defensePower;
+
+		ret = defense + (soldierCount * leadership / 100);
+		return ret;
+
 	}
+
+	// 統率力取得
+	public int GetLeadership()
+	{
+		return leadership;
+	}
+
 }

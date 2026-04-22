@@ -10,6 +10,7 @@ public class CharacterData : ScriptableObject
 	[Header("Šî–{î•ñ")]
 
 	// •«–¼
+	public string characterId;
 	public string characterName;
 
 	[Header("”\—Í")]
@@ -19,4 +20,11 @@ public class CharacterData : ScriptableObject
 
 	// –hŒä—Í
 	public int defensePower = 3;
+
+	// “—¦—Í
+	public int leadership = 5;
+	public int maxSoldier = 100;
+
+	public float levelUpRate = 0.5f;
+
 }

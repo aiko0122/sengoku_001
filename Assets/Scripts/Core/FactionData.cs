@@ -9,12 +9,13 @@ using UnityEngine;
 public class FactionData : ScriptableObject
 {
 	[Header("基本情報")]
-
 	// 勢力名
 	public string factionName;
 
 	[Header("表示色")]
-
 	// マップ表示用の色
 	public Color factionColor;
+
+	[Header("経済")]
+	public int startingGold = 1000;
 }

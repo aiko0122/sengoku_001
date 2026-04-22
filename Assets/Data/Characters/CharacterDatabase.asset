@@ -1,0 +1,76 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5339692b8962bbe42b40b3a4af0e48f6, type: 3}
+  m_Name: CharacterDatabase
+  m_EditorClassIdentifier: 
+  characterJson: {fileID: 4900000, guid: 5817290e286990b4eb05ffd61e604a5c, type: 3}
+  characters:
+  - characterId: 001
+    characterName: "\u4FE1\u9577"
+    initialAttack: 15
+    initialDefense: 5
+    leadership: 90
+    maxSoldier: 100
+    initialFactions: Player
+    initialSkillIds: []
+    initialEquipmentId: 
+    levelUpRate: 0.3
+  - characterId: 002
+    characterName: "\u52DD\u5BB6"
+    initialAttack: 10
+    initialDefense: 15
+    leadership: 80
+    maxSoldier: 100
+    initialFactions: Player
+    initialSkillIds: []
+    initialEquipmentId: 
+    levelUpRate: 0.8
+  - characterId: 003
+    characterName: "\u5149\u79C0"
+    initialAttack: 10
+    initialDefense: 10
+    leadership: 75
+    maxSoldier: 100
+    initialFactions: Player
+    initialSkillIds: []
+    initialEquipmentId: 
+    levelUpRate: 0.5
+  - characterId: 004
+    characterName: enemy_1
+    initialAttack: 10
+    initialDefense: 10
+    leadership: 50
+    maxSoldier: 100
+    initialFactions: Enemy
+    initialSkillIds: []
+    initialEquipmentId: 
+    levelUpRate: 0.5
+  - characterId: 005
+    characterName: enemy_2
+    initialAttack: 10
+    initialDefense: 10
+    leadership: 50
+    maxSoldier: 100
+    initialFactions: Enemy
+    initialSkillIds: []
+    initialEquipmentId: 
+    levelUpRate: 0.5
+  - characterId: 006
+    characterName: enemy_3
+    initialAttack: 10
+    initialDefense: 10
+    leadership: 50
+    maxSoldier: 100
+    initialFactions: Enemy
+    initialSkillIds: []
+    initialEquipmentId: 
+    levelUpRate: 0.5

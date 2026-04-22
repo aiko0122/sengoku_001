@@ -1,0 +1,17 @@
+{
+    "skills": [
+
+        {
+            "skillId": "rapid_attack",
+            "skillName": "速攻",
+            "attackBonus": 10
+        },
+
+        {
+            "skillId": "fortify",
+            "skillName": "防御強化",
+            "defenseBonus": 10
+        }
+
+    ]
+}

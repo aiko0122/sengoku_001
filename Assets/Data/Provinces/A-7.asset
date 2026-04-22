@@ -20,3 +20,6 @@ MonoBehaviour:
   requiredProvinces:
   - {fileID: 11400000, guid: 2aebdd8f627f2c841b7f5ed7a05f610e, type: 2}
   defenseValue: 30
+  initialDefenseLevel: 10
+  initialCharacterIds: []
+  income: 100

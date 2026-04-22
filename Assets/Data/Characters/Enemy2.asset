@@ -12,6 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5b418f63f5edc040817812cc309c78d, type: 3}
   m_Name: Enemy2
   m_EditorClassIdentifier: 
+  characterId: 005
   characterName: Enemy2
   attackPower: 4
   defensePower: 4
+  leadership: 5
+  maxSoldier: 0
+  levelUpRate: 0.5

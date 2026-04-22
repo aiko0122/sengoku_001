@@ -12,6 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5b418f63f5edc040817812cc309c78d, type: 3}
   m_Name: Hero3
   m_EditorClassIdentifier: 
+  characterId: 003
   characterName: Hero3
-  attackPower: 6
-  defensePower: 3
+  attackPower: 15
+  defensePower: 5
+  leadership: 3
+  maxSoldier: 0
+  levelUpRate: 0.2

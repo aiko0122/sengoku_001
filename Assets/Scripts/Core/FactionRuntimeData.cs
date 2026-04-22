@@ -1,0 +1,18 @@
+using System.Collections.Generic;
+
+public class FactionRuntimeData
+{
+	public FactionData baseData;
+
+	// åªç›éëã‡
+	public int gold;
+
+	public FactionRuntimeData(
+		FactionData data)
+	{
+		baseData = data;
+
+		gold =
+			data.startingGold;
+	}
+}

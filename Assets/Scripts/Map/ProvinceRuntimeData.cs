@@ -19,11 +19,24 @@ public class ProvinceRuntimeData
 
 	public const int MAX_CHARACTERS = 3;
 
+	// 関所設定
+	public bool isUnlocked;
+
+	public int defense;
+	public int defenseLevel;
+
 	// コンストラクタ
 	public ProvinceRuntimeData(
 		ProvinceData data)
 	{
 		baseData = data;
+
+		defense = baseData.defenseValue;
+		defenseLevel = baseData.initialDefenseLevel;
+
+		// 通常地域は最初から解放
+		isUnlocked =
+			!data.isGate;
 
 		// リスト初期化（忘れるとエラー）
 		stationedCharacters =
@@ -56,7 +69,7 @@ public class ProvinceRuntimeData
 		Debug.Log(
 			baseData.provinceName +
 			" に追加：" +
-			character.baseData.characterName);
+			character.characterName);
 
 		return true;
 	}
