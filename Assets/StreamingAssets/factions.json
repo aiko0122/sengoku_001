@@ -1,0 +1,24 @@
+{
+  "factions": [
+    {
+      "factionId": "001",
+      "factionName": "自軍",
+      "colorHex": "#00AAFF",
+      "initialGold": 1000
+    },
+
+    {
+      "factionId": "002",
+      "factionName": "敵軍",
+      "colorHex": "#FF3333",
+      "initialGold": 1000
+    },
+
+    {
+      "factionId": "100",
+      "factionName": "中立",
+      "colorHex": "#00A868",
+      "initialGold": 1000
+    }
+  ]
+}

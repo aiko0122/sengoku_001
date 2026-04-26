@@ -419,14 +419,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc5582820d026f542842c08e40f0bf77, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  provinceData: {fileID: 0}
+  provinceId: 
   baseImage: {fileID: 5839034668314484305}
-  highlightOverlay: {fileID: 5839034669157793696}
-  lockedOverlay: {fileID: 5839034668549248133}
   defenseOverlaySprites:
   - {fileID: 21300000, guid: e93cd185effc4644b85b149147820422, type: 3}
   - {fileID: 21300000, guid: 20c37920b87a8fa4a983b711edebd239, type: 3}
   - {fileID: 21300000, guid: d1a6e7ed7193e6f43a06d88690df2fc3, type: 3}
+  highlightOverlay: {fileID: 5839034669157793696}
+  lockedOverlay: {fileID: 5839034668549248133}
+  countText: {fileID: 5839034667846674030}
+  placeText: {fileID: 5839034669750634298}
   selectedColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   moveColor: {r: 0, g: 1, b: 0, a: 1}
   attackColor: {r: 1, g: 0, b: 0, a: 1}

@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25e25808146fdca4498d48ebfbfc92d2, type: 3}
   m_Name: A-1
   m_EditorClassIdentifier: 
+  provinceId: 
   provinceName: A-1
   icon: {fileID: 21300000, guid: 20c37920b87a8fa4a983b711edebd239, type: 3}
   neighbors:

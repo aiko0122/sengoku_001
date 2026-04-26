@@ -1,68 +1,153 @@
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 
-[CreateAssetMenu(
-	fileName = "CharacterDatabase",
-	menuName = "Game/Character Database")]
+//[System.Serializable]
+//public class CharacterMasterData
+//{
+//	//--------------------------------
+//	// 基本情報
+//	//--------------------------------
+
+//	public string characterId;
+//	public string characterName;
+
+//	//--------------------------------
+//	// ステータス
+//	//--------------------------------
+
+//	public int leadership;
+//	public int attack;
+//	public int defense;
+
+//	//--------------------------------
+//	// 初期兵数
+//	//--------------------------------
+
+//	public int initialSoldiers;
+//}
 
 [System.Serializable]
-public class CharacterMasterList
+public class CharacterMasterDataList
 {
 	public List<CharacterMasterData>
 		characters;
 }
 
-public class CharacterDatabase
-	: ScriptableObject
+public static class CharacterDatabase
 {
-	public TextAsset characterJson;
+	//--------------------------------
+	// キャラ一覧
+	//--------------------------------
 
-	public List<CharacterMasterData>
-		characters;
+	public static List<CharacterMasterData>
+		characters =
+			new List<CharacterMasterData>();
 
-	Dictionary<string,
-		CharacterMasterData> lookup;
-
-	public void Initialize()
+    //--------------------------------
+    // Jsonロード
+    //--------------------------------
+	public static void Load()
 	{
-		LoadFromJson();
+		string path =
+			Path.Combine(
+				Application.streamingAssetsPath,
+				"characters.json");
 
-		lookup =
-			new Dictionary<string,
-				CharacterMasterData>();
-
-		foreach (var c in characters)
+		if (!File.Exists(path))
 		{
-			lookup[c.characterId] = c;
-		}
-	}
+			Debug.LogError(
+				"Character json not found: "
+				+ path);
 
-	void LoadFromJson()
-	{
+			return;
+		}
+
+		string json =
+			File.ReadAllText(path);
+
 		var data =
-			JsonUtility.FromJson<
-				CharacterMasterList>(
-				characterJson.text);
+			JsonUtility.FromJson
+			<CharacterMasterDataList>(json);
 
 		characters = data.characters;
 
 		Debug.Log(
-			"Character読込: " +
-			characters.Count);
+			"Characters Loaded: "
+			+ characters.Count);
 	}
 
-	public CharacterMasterData GetCharacter(
-		string id)
+	//--------------------------------
+	// ID検索（重要）
+	//--------------------------------
+
+	public static CharacterMasterData
+		GetCharacter(string characterId)
 	{
-		if (lookup == null)
-			Initialize();
+		foreach (var ch in characters)
+		{
+			if (ch.characterId
+				== characterId)
+			{
+				return ch;
+			}
+		}
 
-		if (lookup.ContainsKey(id))
-			return lookup[id];
-
-		Debug.LogWarning(
-			"Character not found: " + id);
+		Debug.LogError(
+			"Character not found: "
+			+ characterId);
 
 		return null;
 	}
+	//public TextAsset characterJson;
+
+	//public List<CharacterMasterData>
+	//	characters;
+
+	//Dictionary<string,
+	//	CharacterMasterData> lookup;
+
+	//public void Initialize()
+	//{
+	//	LoadFromJson();
+
+	//	lookup =
+	//		new Dictionary<string,
+	//			CharacterMasterData>();
+
+	//	foreach (var c in characters)
+	//	{
+	//		lookup[c.characterId] = c;
+	//	}
+	//}
+
+	//void LoadFromJson()
+	//{
+	//	var data =
+	//		JsonUtility.FromJson<
+	//			CharacterMasterList>(
+	//			characterJson.text);
+
+	//	characters = data.characters;
+
+	//	Debug.Log(
+	//		"Character読込: " +
+	//		characters.Count);
+	//}
+
+	//public CharacterMasterData GetCharacter(
+	//	string id)
+	//{
+	//	if (lookup == null)
+	//		Initialize();
+
+	//	if (lookup.ContainsKey(id))
+	//		return lookup[id];
+
+	//	Debug.LogWarning(
+	//		"Character not found: " + id);
+
+	//	return null;
+	//}
 }

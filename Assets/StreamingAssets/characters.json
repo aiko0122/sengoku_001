@@ -1,0 +1,83 @@
+{
+	"characters": [
+
+		{
+			"characterId": "001",
+			"characterName": "信長",
+			"initialFactions": "Player",
+			"initialAttack": 15,
+			"initialDefense": 5,
+			"leadership": 90,
+			"maxSoldier": 100,
+			"initialSkillIds": [],
+			"initialEquipmentId": "",
+			"levelUpRate": "0.3f"
+		},
+
+		{
+			"characterId": "002",
+			"characterName": "勝家",
+			"initialFactions": "Player",
+			"initialAttack": 10,
+			"initialDefense": 15,
+			"leadership": 80,
+			"maxSoldier": 100,
+			"initialSkillIds": [],
+			"initialEquipmentId": "",
+			"levelUpRate": "0.8f"
+		},
+
+		{
+			"characterId": "003",
+			"characterName": "光秀",
+			"initialFactions": "Player",
+			"initialAttack": 10,
+			"initialDefense": 10,
+			"leadership": 75,
+			"maxSoldier": 100,
+			"initialSkillIds": [],
+			"initialEquipmentId": "",
+			"levelUpRate": "0.5f"
+		},
+
+		{
+			"characterId": "004",
+			"characterName": "enemy_1",
+			"initialFactions": "Enemy",
+			"initialAttack": 10,
+			"initialDefense": 10,
+			"leadership": 50,
+			"maxSoldier": 100,
+			"initialSkillIds": [],
+			"initialEquipmentId": "",
+			"levelUpRate": "0.5f"
+		},
+
+		{
+			"characterId": "005",
+			"characterName": "enemy_2",
+			"initialFactions": "Enemy",
+			"initialAttack": 10,
+			"initialDefense": 10,
+			"leadership": 50,
+			"maxSoldier": 100,
+			"initialSkillIds": [],
+			"initialEquipmentId": "",
+			"levelUpRate": "0.5f"
+		},
+
+		{
+			"characterId": "006",
+			"characterName": "enemy_3",
+			"initialFactions": "Enemy",
+			"initialAttack": 10,
+			"initialDefense": 10,
+			"leadership": 50,
+			"maxSoldier": 100,
+			"initialSkillIds": [],
+			"initialEquipmentId": "",
+			"levelUpRate": "0.5f"
+		}
+
+	]
+}

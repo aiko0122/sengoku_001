@@ -1,0 +1,153 @@
+{
+  "provinces": [
+    {
+        "provinceId": "A-1",
+        "provinceName": "A-1",
+        "initialOwner": "001",
+        "isGate": "False",
+        "requiredProvinces": [],
+
+        "income": 100,
+        "defenseValue": "5",
+        "initialDefenseLevel": "5",
+
+        "neighbors": [
+            "A-2"
+        ],
+        "initialCharacterIds": [
+            "001",
+            "002",
+            "003"
+        ]
+    },
+
+    {
+        "provinceId": "A-2",
+        "provinceName": "A-2",
+        "initialOwner": "100",
+        "isGate": "False",
+        "requiredProvinces": [],
+
+        "income": 100,
+        "defenseValue": "5",
+        "initialDefenseLevel": "2",
+
+        "neighbors": [
+            "A-1",
+            "A-3",
+            "A-4",
+            "A-5"
+        ],
+        "initialCharacterIds": [
+        ]
+    },
+
+    {
+        "provinceId": "A-3",
+        "provinceName": "A-3",
+        "initialOwner": "002",
+        "isGate": "False",
+        "requiredProvinces": [],
+
+        "income": 100,
+        "defenseValue": "10",
+        "initialDefenseLevel": "5",
+
+        "neighbors": [
+            "A-2",
+            "A-4",
+            "A-6"
+        ],
+        "initialCharacterIds": [
+        ]
+    },
+
+    {
+        "provinceId": "A-4",
+        "provinceName": "A-4",
+        "initialOwner": "002",
+        "isGate": "False",
+        "requiredProvinces": [],
+
+        "income": 100,
+        "defenseValue": "5",
+        "initialDefenseLevel": "5",
+
+        "neighbors": [
+            "A-2",
+            "A-3",
+            "A-6"
+        ],
+        "initialCharacterIds": [
+            "004",
+            "005"
+        ]
+    },
+
+    {
+        "provinceId": "A-5",
+        "provinceName": "A-5",
+        "initialOwner": "100",
+        "isGate": "False",
+        "requiredProvinces": [],
+
+        "income": 100,
+        "defenseValue": "5",
+        "initialDefenseLevel": "5",
+
+        "neighbors": [
+            "A-2",
+            "A-6"
+        ],
+        "initialCharacterIds": [
+        ]
+    },
+
+    {
+        "provinceId": "A-6",
+        "provinceName": "A-6",
+        "initialOwner": "002",
+        "isGate": "True",
+        "requiredProvinces": [
+            { "provinceId": "A-1" },
+            { "provinceId": "A-2" },
+            { "provinceId": "A-3" },
+            { "provinceId": "A-4" },
+            { "provinceId": "A-5" }
+        ],
+
+        "income": 100,
+        "defenseValue": "20",
+        "initialDefenseLevel": "7",
+
+        "neighbors": [
+            "A-3",
+            "A-4",
+            "A-5",
+            "A-7"
+        ],
+        "initialCharacterIds": [
+        ]
+    },
+
+    {
+        "provinceId": "A-7",
+        "provinceName": "A-7",
+        "initialOwner": "002",
+        "isGate": "True",
+        "requiredProvinces": [
+            { "provinceId": "A-6" }
+        ],
+
+        "income": 100,
+        "defenseValue": "30",
+        "initialDefenseLevel": "10",
+
+        "neighbors": [
+            "A-2"
+        ],
+        "initialCharacterIds": [
+        ]
+    }
+  ]
+}

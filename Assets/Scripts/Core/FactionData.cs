@@ -10,6 +10,7 @@ public class FactionData : ScriptableObject
 {
 	[Header("Šî–{î•ñ")]
 	// ¨—Í–¼
+	public string factionId;
 	public string factionName;
 
 	[Header("•\¦F")]

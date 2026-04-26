@@ -2,10 +2,10 @@
 using TMPro;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.TextCore.Text;
 using UnityEngine.UI;
 using static UnityEngine.GraphicsBuffer;
-using UnityEngine.SceneManagement;
 
 // マップ全体の制御
 
@@ -13,7 +13,8 @@ public class MapManager : MonoBehaviour
 {
 	[Header("初期所有者設定")]
 
-	[SerializeField] FactionData playerFaction;
+	//[SerializeField] FactionData playerFaction;
+	string playerFactionId = "001";
 	public FactionData enemyFaction;
 	public FactionData neutralFaction;
 
@@ -22,16 +23,16 @@ public class MapManager : MonoBehaviour
 
 	//[Header("初期武将")]
 
-	[SerializeField]
-	CharacterDatabase characterDatabase;
+	//[SerializeField]
+	//private CharacterDatabase characterDatabase;
 
 	[Header("勝敗条件")]
 
 	[SerializeField]
-	ProvinceData victoryProvince;
+		string victoryProvinceId;
 
 	[SerializeField]
-	ProvinceData defeatProvince;
+		string defeatProvinceId;
 
 	[Header("補充設定")]
 
@@ -44,15 +45,29 @@ public class MapManager : MonoBehaviour
 	[Header("全地域データ")]
 
 	// InspectorでA-1〜A-7登録
-	public List<ProvinceData>
-		allProvinceData =
+	//public List<ProvinceData>
+	//	allProvinceData =
+	//	new List<ProvinceData>();
+	List<ProvinceData>
+	allProvinceData =
 		new List<ProvinceData>();
 
 	// 実行中データ管理
-	private Dictionary<
-		ProvinceData,
+	Dictionary<
+		string,
 		ProvinceRuntimeData>
-		runtimeData;
+		runtimeData =
+			new Dictionary<
+				string,
+				ProvinceRuntimeData>();
+
+	Dictionary<
+		string,
+		ProvinceNode>
+		provinceNodeDict =
+			new Dictionary<
+				string,
+				ProvinceNode>();
 
 	[SerializeField]
 	BattleManager battleManager;
@@ -68,6 +83,14 @@ public class MapManager : MonoBehaviour
 
 	FactionRuntimeData
 		playerFactionRuntime;
+
+	Dictionary<
+		string,
+		FactionRuntimeData>
+		factionRuntimeDataDict =
+			new Dictionary<
+				string,
+				FactionRuntimeData>();
 
 	[SerializeField]
 	GameObject characterPanel;
@@ -144,32 +167,15 @@ public class MapManager : MonoBehaviour
 	ProvinceRuntimeData pendingTarget;
 	List<CharacterRuntimeData> pendingAttackers;
 
-	List<ProvinceRuntimeData>
-GetEnemyProvinces()
-	{
-		List<ProvinceRuntimeData>
-			result =
-			new List<
-				ProvinceRuntimeData>();
-
-		foreach (var province
-			in runtimeData.Values)
-		{
-			// プレイヤー以外
-			if (province.ownerFaction
-				!= playerFaction)
-			{
-				result.Add(province);
-			}
-		}
-
-		return result;
-	}
 
 	void Start()
 	{
-		characterDatabase.Initialize();
+		CharacterDatabase.Load();
 		InitializeRuntimeData();
+
+		Debug.Log("Gold " + playerFactionRuntime.gold);
+
+		UpdateGoldUI();
 		battleManager.Initialize(this);
 
 		StartPlayerTurn();
@@ -225,8 +231,8 @@ GetEnemyProvinces()
 		foreach (var province
 			in runtimeData.Values)
 		{
-			if (province.ownerFaction
-				== playerFaction)
+			if (province.owner.baseData.factionId
+				== playerFactionId)
 			{
 				totalIncome +=
 					province.baseData.income;
@@ -242,7 +248,7 @@ GetEnemyProvinces()
 			"収入：" + totalIncome);
 	}
 
-	void CancelSelection()
+	public void CancelSelection()
 	{
 		if (selectedNode == null)
 			return;
@@ -264,76 +270,135 @@ GetEnemyProvinces()
 	}
 
 	// 実行用データ作成
-	void InitializeRuntimeData()
+	public void InitializeRuntimeData()
 	{
+		//--------------------------------
+		// Jsonロード
+		//--------------------------------
 		InitializeFactionRuntimeData();
+		ProvinceDatabase.Load();
 
-		runtimeData =
-			new Dictionary<
-				ProvinceData,
-				ProvinceRuntimeData>();
+		runtimeData.Clear();
 
-		foreach (var data
-			in allProvinceData)
+		//--------------------------------
+		// Node登録
+		//--------------------------------
+
+		RegisterProvinceNodes();
+
+		//--------------------------------
+		// Runtime生成
+		//--------------------------------
+
+		foreach (var master
+			in ProvinceDatabase
+				.provinces)
 		{
 			var runtime =
-				new ProvinceRuntimeData(data);
+				new ProvinceRuntimeData(
+					master);
 
-			runtimeData[data] = runtime;
+			runtimeData.Add(
+				master.provinceId,
+				runtime);
+
+			//--------------------------------
+			// Node紐付け
+			//--------------------------------
+
+			if (provinceNodeDict
+				.TryGetValue(
+					master.provinceId,
+					out var node))
+			{
+				runtime.node =
+					node;
+
+				//--------------------------------
+				// 名前表示
+				//--------------------------------
+
+				node.SetNameText(
+					master.provinceName);
+
+				node.UpdateDefenseOverlay(
+					master.initialDefenseLevel);
+			}
+			else
+			{
+				Debug.LogError(
+					"Node not found: "
+					+ master.provinceId);
+			}
 		}
 
-		// 初期所有設定
+		//--------------------------------
+		// 初期Owner設定
+		//--------------------------------
+
 		SetInitialOwners();
 		SetInitialCharacters();
+		//--------------------------------
+		// 色更新
+		//--------------------------------
+
 		UpdateAllNodeColors();
-
-		UpdateGoldUI();
-
 	}
-
 	void InitializeFactionRuntimeData()
 	{
-		factionRuntimeData =
-			new Dictionary<
-				FactionData,
-				FactionRuntimeData>();
+		FactionDatabase.Load();
 
-		foreach (var faction
-			in allFactions)
+		factionRuntimeDataDict.Clear();
+
+		foreach (var master
+			in FactionDatabase.factions)
 		{
 			var runtime =
 				new FactionRuntimeData(
-					faction);
+					master);
 
-			factionRuntimeData
-				[faction] = runtime;
+			factionRuntimeDataDict
+				.Add(
+					master.factionId,
+					runtime);
+
+			if (master.factionId == playerFactionId)
+			{
+				playerFactionRuntime = runtime;
+			}
 		}
-
-		// プレイヤー取得
-		playerFactionRuntime =
-			factionRuntimeData
-				[playerFaction];
 	}
 
 	void SetInitialOwners()
 	{
-		SetOwner("A-1", playerFaction);
-		SetOwner("A-2", neutralFaction);
-		SetOwner("A-3", enemyFaction);
-		SetOwner("A-4", enemyFaction);
-		SetOwner("A-5", neutralFaction);
-		SetOwner("A-6", enemyFaction);
-		SetOwner("A-7", enemyFaction);
+		foreach (var master
+			in ProvinceDatabase
+				.provinces)
+		{
+			var province =
+				GetProvinceById(
+					master.provinceId);
 
-		//var enemyProvince =
-		//	runtimeData[provinceA3];
+			string factionId =
+				province
+					.baseData
+					.initialOwner;
 
-		//enemyProvince.AddCharacter(
-		//	new CharacterRuntimeData(enemy1));
+			var faction =
+			//GetFaction(factionId);
+				GetFactionById(
+					province.baseData
+						.initialOwner);
 
-		//enemyProvince.AddCharacter(
-		//	new CharacterRuntimeData(enemy2));
-
+			province.owner =
+				faction;
+			if (faction == null)
+			{
+				Debug.LogError(
+					"Faction設定失敗: " +
+					province.baseData.provinceName);
+			}
+		}
 	}
 
 	void SetInitialCharacters()
@@ -341,69 +406,73 @@ GetEnemyProvinces()
 		foreach (var province
 			in runtimeData.Values)
 		{
-			var idList =
-				province.baseData
-					.initialCharacterIds;
+			var master =
+				province.baseData;
 
-			if (idList == null)
+			//--------------------------------
+			// 初期武将が無い場合
+			//--------------------------------
+
+			if (master
+				.initialCharacterIds == null)
+			{
+				Debug.LogError(
+					"Character create Non "
+					);
+
 				continue;
+			}
+
+			//--------------------------------
+			// 武将生成
+			//--------------------------------
 
 			foreach (var charId
-				in idList)
+				in master.initialCharacterIds)
 			{
-				//var charData =
-				//	characterDatabase
-				//		.GetCharacter(charId);
+				Debug.Log("Set Init Char" + charId);
+				var character =
+				CharacterFactory
+					.CreateCharacter(
+							charId);
 
-				//if (charData == null)
-				//{
-				//	Debug.LogWarning(
-				//		"武将IDが見つかりません: "
-				//		+ charId);
-				//	continue;
-				//}
+				if (character == null)
+				{
+					Debug.LogError(
+						"Character create failed: "
+						+ charId);
 
-				//var runtime =
-				//	new CharacterRuntimeData(
-				//		charData);
+					continue;
+				}
 
-				//runtime.soldierCount =
-				//	charData.maxSoldier;
+				//--------------------------------
+				// 所属Faction設定
+				//--------------------------------
 
-				//province.stationedCharacters
-				//	.Add(runtime);
+				character.faction =
+					province.owner;
 
-				//Debug.Log(
-				//	province.baseData.provinceName +
-				//	" に生成：" +
-				//	charData.characterName);
+				//--------------------------------
+				// Provinceに追加
+				//--------------------------------
 
-				//var runtime =
-				//	CreateCharacter(charId);
+				province.characterList
+					.Add(character);
 
-				//if (runtime == null)
-				//	continue;
-
-				//province.stationedCharacters
-				//	.Add(runtime);
-
-				//Debug.Log(
-				//	province.baseData.provinceName +
-				//	" に配置: " +
-				//	runtime.baseData.characterName);
-
-				AddCharacterToProvince(
-					province,
-					charId);
+				Debug.Log(
+					"Added: "
+					+ character.baseData.characterName
+					+ " → "
+					+ province.baseData.provinceName);
 			}
 		}
 	}
 
-	CharacterRuntimeData CreateCharacter(
+	public CharacterRuntimeData CreateCharacter(
 		string characterId)
 	{
 		var master =
-			characterDatabase
+			CharacterDatabase
 				.GetCharacter(characterId);
 
 		if (master == null)
@@ -416,22 +485,23 @@ GetEnemyProvinces()
 		}
 
 		var runtime =
-			new CharacterRuntimeData();
+			new CharacterRuntimeData(
+				master);
 
-		runtime.characterId		= master.characterId;
-		runtime.characterName	= master.characterName;
+		//runtime.characterId		= master.characterId;
+		//runtime.characterName	= master.characterName;
 
-		runtime.attack			= master.initialAttack;
-		runtime.defense			= master.initialDefense;
-		runtime.leadership		= master.leadership;
-		runtime.soldierCount	= master.maxSoldier;
+		//runtime.attack			= master.initialAttack;
+		//runtime.defense			= master.initialDefense;
+		//runtime.leadership		= master.leadership;
+		//runtime.soldierCount	= master.maxSoldier;
 
-		runtime.skillIds =
-			new List<string>(
-				master.initialSkillIds);
+		//runtime.skillIds =
+		//	new List<string>(
+		//		master.initialSkillIds);
 
-		runtime.equipmentId =
-			master.initialEquipmentId;
+		//runtime.equipmentId =
+		//	master.initialEquipmentId;
 
 		// ★画像読み込み
 		//runtime.portrait =
@@ -446,6 +516,30 @@ GetEnemyProvinces()
 		return runtime;
 	}
 
+	//public static class CharacterFactory
+	//{
+	//	public static CharacterRuntimeData
+	//		CreateCharacter(
+	//			string characterId)
+	//	{
+	//		var master =
+	//			CharacterDatabase
+	//				.GetCharacter(
+	//					characterId);
+
+	//		if (master == null)
+	//		{
+	//			Debug.LogError(
+	//				"Character not found: "
+	//				+ characterId);
+
+	//			return null;
+	//		}
+
+	//		return new CharacterRuntimeData(
+	//			master);
+	//	}
+	//}
 	void ReinforceProvince(
 		ProvinceRuntimeData province,
 		string characterId)
@@ -456,7 +550,7 @@ GetEnemyProvinces()
 		if (character == null)
 			return;
 
-		province.stationedCharacters
+		province.characterList
 			.Add(character);
 	}
 
@@ -470,13 +564,13 @@ GetEnemyProvinces()
 		if (runtime == null)
 			return;
 
-		province.stationedCharacters
+		province.characterList
 			.Add(runtime);
 
 		Debug.Log(
 			province.baseData.provinceName +
 			" に武将追加: " +
-			runtime.characterName);
+			runtime.baseData.characterName);
 	}
 
 	void UpdateGoldUI()
@@ -504,7 +598,7 @@ GetEnemyProvinces()
 		}
 
 		Debug.Log(
-			character.characterName +
+			character.baseData.characterName +
 			" を補充 +" +
 			reinforceAmount);
 
@@ -541,15 +635,15 @@ GetEnemyProvinces()
 	}
 
 	void SetOwner(
-	string provinceName,
-	FactionData faction)
+		string provinceName,
+		FactionRuntimeData faction)
 	{
 		foreach (var pair in runtimeData)
 		{
-			if (pair.Key.provinceName
+			if (pair.Value.baseData.provinceName
 				== provinceName)
 			{
-				pair.Value.ownerFaction =
+				pair.Value.owner =
 					faction;
 			}
 		}
@@ -563,11 +657,11 @@ GetEnemyProvinces()
 		foreach (var province
 			in enemyProvinces)
 		{
-			if (province.stationedCharacters.Count == 0)
+			if (province.characterList.Count == 0)
 				continue;
 
 			var attacker =
-				province.stationedCharacters[0];
+				province.characterList[0];
 
 			int toNeighbor = Random.Range(0, 
 				(province.baseData.neighbors.Count + 1));
@@ -586,7 +680,7 @@ GetEnemyProvinces()
 				{
 					var attackers =
 						new List<CharacterRuntimeData>(
-							province.stationedCharacters);
+							province.characterList);
 
 					if (attackers.Count != 0)
 					{
@@ -605,7 +699,7 @@ GetEnemyProvinces()
 				loopCount++;
 
 				// プレイヤー地域なら攻撃
-				//if (target.ownerFaction
+				//if (target.owner
 				//	== playerFaction)
 				//{
 				//	Debug.Log(
@@ -646,7 +740,17 @@ GetEnemyProvinces()
 		}
 
 		var runtime =
-			runtimeData[node.provinceData];
+			runtimeData[
+				node.provinceId]; 
+
+		if (runtime == null)
+		{
+			Debug.LogError(
+				"Province not found: "
+				+ node.provinceId);
+
+			return;
+		}
 
 		// =========================
 		// ■1回目クリック（出発地選択）
@@ -658,7 +762,8 @@ GetEnemyProvinces()
 
 			UpdateAllNodeColors();
 
-			if (selectedProvince.ownerFaction == playerFaction)
+			if (selectedProvince.owner.baseData.factionId
+				== playerFactionId)
 			{
 				Debug.Log("勢力：Player");
 				HighlightNeighbors(runtime);
@@ -669,17 +774,18 @@ GetEnemyProvinces()
 			}
 
 			Debug.Log(
-					"出発地選択：" +
-					node.provinceData.provinceName);
+				"出発地選択：" +
+				runtime.baseData.provinceName);
 
 			Debug.Log(
 				"地域情報メニュー表示：" +
-				node.provinceData.provinceName);
+				runtime.baseData.provinceName);
 
 			return;
 		}
 
-		if (selectedProvince.ownerFaction != playerFaction)
+		if (selectedProvince.owner.baseData.factionId
+			!= playerFactionId)
 		{
 			ClearSelectedNode();
 			UpdateAllNodeColors();
@@ -700,7 +806,7 @@ GetEnemyProvinces()
 			
 			Debug.Log(
 				"開発メニュー表示：" +
-				node.provinceData.provinceName);
+				runtime.baseData.provinceName);
 
 			ShowDevelopmentMenu(runtime);
 
@@ -728,7 +834,7 @@ GetEnemyProvinces()
 
 			Debug.Log(
 				"目的地選択：" +
-				node.provinceData.provinceName);
+				runtime.baseData.provinceName);
 
 			// ★ここで武将選択を表示
 			ShowCharacterList(selectedProvince);
@@ -777,15 +883,11 @@ GetEnemyProvinces()
 	ProvinceRuntimeData target,
 	List<CharacterRuntimeData> attackers)
 	{
-		//var attackers =
-		//	new List<CharacterRuntimeData>(
-		//	selectedCharacters);
 
 		// 同勢力 → 移動
-		if (from.ownerFaction
-			== target.ownerFaction)
+		if (from.owner
+			== target.owner)
 		{
-			//MoveOneCharacter(from, target, attackers);
 			ShowMoveConfirm(from, target, attackers);
 
 			Debug.Log(
@@ -798,7 +900,6 @@ GetEnemyProvinces()
 		}
 
 		// 敵勢力 → 攻撃
-		//TryAttack(from, target, selectedCharacters);
 		ShowAttackConfirm(
 			from,
 			target,
@@ -833,7 +934,7 @@ GetEnemyProvinces()
 		foreach (var ch in attackers)
 		{
 			attackerText +=
-				ch.characterName + "\n";
+				ch.baseData.characterName + "\n";
 		}
 
 		attackerListText.text =
@@ -843,17 +944,17 @@ GetEnemyProvinces()
 		string defenderText = "防御側：\n";
 
 		foreach (var ch
-			in target.stationedCharacters)
+			in target.characterList)
 		{
 			defenderText +=
-				ch.characterName + "\n";
+				ch.baseData.characterName + "\n";
 		}
 
 		defenderListText.text =
 			defenderText;
 
 		battleManager.addBattleCount(attackers);
-		battleManager.addBattleCount(target.stationedCharacters);
+		battleManager.addBattleCount(target.characterList);
 
 		// 戦力表示
 		int attackPower =
@@ -890,7 +991,7 @@ GetEnemyProvinces()
 		foreach (var ch in characters)
 		{
 			listText +=
-				ch.characterName +
+				ch.baseData.characterName +
 				"\n";
 		}
 
@@ -909,36 +1010,19 @@ GetEnemyProvinces()
 
 		foreach (var node in nodes)
 		{
-			if (node.provinceData == null)
-			{
-				Debug.LogError(
-					node.name +
-					" provinceDataが未設定");
-
-				continue;
-			}
 
 			var runtime =
-				runtimeData[node.provinceData];
-
-			if (runtime.ownerFaction == null)
-			{
-				Debug.LogError(
-					node.name +
-					" ownerFactionがnull");
-
-				continue;
-			}
+				runtimeData[node.provinceId];
 
 			// 色更新
 			node.UpdateColor(runtime);
-				//runtime.ownerFaction);
+				//runtime.owner);
 
 			node.ClearHighlight();
 
 			// 人数更新
 			int count =
-				runtime.stationedCharacters.Count;
+				runtime.characterList.Count;
 
 			node.UpdateCount(count);
 
@@ -948,13 +1032,13 @@ GetEnemyProvinces()
 		// 選択中ノードの上書き
 		if (selectedNode != null)
 		{
-			Debug.Log("test True");
+			//Debug.Log("test True");
 			// 色更新
 			selectedNode.SetSelected(true);
 		}
 		else
 		{
-			Debug.Log("test False");
+			//Debug.Log("test False");
 		}
 	}
 
@@ -964,7 +1048,7 @@ GetEnemyProvinces()
 	List<CharacterRuntimeData> attackers)
 	{
 		// 移動元に武将がいない
-		if (from.stationedCharacters.Count == 0)
+		if (from.characterList.Count == 0)
 		{
 			Debug.Log("移動元に武将なし");
 			return;
@@ -986,17 +1070,17 @@ GetEnemyProvinces()
 		{
 			Debug.Log(
 				"削除前：" +
-				from.stationedCharacters.Count);
+				from.characterList.Count);
 
 			// 移動元から削除
-			from.stationedCharacters
+			from.characterList
 				.Remove(attacker);
 			// 移動先へ追加
 			to.AddCharacter(attacker);
 
 			Debug.Log(
 				"退避：" +
-				attacker.characterName);
+				attacker.baseData.characterName);
 		}
 
 		//// 移動元から削除
@@ -1027,8 +1111,8 @@ GetEnemyProvinces()
 			if (neighborRuntime.isUnlocked)
 			{
 				// 同勢力 → 緑（移動）
-				if (neighborRuntime.ownerFaction
-					== from.ownerFaction)
+				if (neighborRuntime.owner
+					== from.owner)
 				{
 					neighborNode.SetMoveHighlight();
 				}
@@ -1042,14 +1126,15 @@ GetEnemyProvinces()
 	}
 
 	ProvinceNode GetNodeByProvinceData(
-	ProvinceData data)
+		string data)
+		//ProvinceData data)
 	{
 		var nodes =
 			FindObjectsOfType<ProvinceNode>();
 
 		foreach (var node in nodes)
 		{
-			if (node.provinceData == data)
+			if (node.provinceId == data)
 			{
 				return node;
 			}
@@ -1058,30 +1143,10 @@ GetEnemyProvinces()
 		return null;
 	}
 
-	//void SelectCharacter(
-	//ProvinceRuntimeData province)
-	//{
-	//	//	if (province.stationedCharacters.Count == 0)
-	//	//	{
-	//	//		Debug.Log("武将なし");
-	//	//		selectedCharacter = null;
-	//	//		return;
-	//	//	}
-	//	//	// 仮：先頭武将を選択
-	//	//	selectedCharacter =
-	//	//		province.stationedCharacters[0];
-
-	//	//	Debug.Log(
-	//	//		"武将選択：" +
-	//	//		selectedCharacter
-	//	//		.baseData
-	//	//		.characterName);
-	//}
-
 	public void MoveCharacterToFriendlyProvince(
-	CharacterRuntimeData character,
-	FactionData oldFaction,
-	ProvinceRuntimeData lostProvince)
+		CharacterRuntimeData character,
+		FactionRuntimeData oldFaction,
+		ProvinceRuntimeData lostProvince)
 	{
 		foreach (var province
 			in runtimeData.Values)
@@ -1090,15 +1155,15 @@ GetEnemyProvinces()
 			if (province == lostProvince)
 				continue;
 
-			if (province.ownerFaction
+			if (province.owner
 				== oldFaction)
 			{
-				province.stationedCharacters
+				province.characterList
 					.Add(character);
 
 				Debug.Log(
 					"退避：" +
-					character.characterName + 
+					character.baseData.characterName + 
 					" → " +
 					province.baseData.provinceName);
 				return;
@@ -1107,7 +1172,7 @@ GetEnemyProvinces()
 
 		Debug.Log(
 			"退避先なし：" +
-			character.characterName);
+			character.baseData.characterName);
 	}
 
 	void ShowCharacterList(
@@ -1147,7 +1212,7 @@ GetEnemyProvinces()
 
 		// 武将作成
 		foreach (var character
-			in province.stationedCharacters)
+			in province.characterList)
 		{
 			var obj =
 				Instantiate(
@@ -1179,10 +1244,10 @@ GetEnemyProvinces()
 			selectedCharacters.Count);
 	}
 
-	public void OnCharacterSelected(
-		CharacterRuntimeData character,
-		CharacterButton button)
-	{
+	//public void OnCharacterSelected(
+	//	CharacterRuntimeData character,
+	//	CharacterButton button)
+	//{
 		//// 前の選択を戻す
 		//if (selectedCharacterButton != null)
 		//{
@@ -1200,7 +1265,7 @@ GetEnemyProvinces()
 		//Debug.Log(
 		//	"武将選択：" +
 		//	character.baseData.characterName);
-	}
+	//}
 
 	public void AddSelectedCharacter(
 	CharacterRuntimeData character)
@@ -1241,23 +1306,83 @@ GetEnemyProvinces()
 
 	public void CheckVictoryDefeat()
 	{
+		//--------------------------------
+		// nullチェック
+		//--------------------------------
+
+		if (victoryProvinceId == null ||
+			string.IsNullOrEmpty(
+				victoryProvinceId))
+		{
+			Debug.LogError(
+				"victoryProvince 未設定");
+
+			return;
+		}
+
+		if (defeatProvinceId == null ||
+			string.IsNullOrEmpty(
+				defeatProvinceId))
+		{
+			Debug.LogError(
+				"defeatProvince 未設定");
+
+			return;
+		}
+
+		//--------------------------------
+		// 存在チェック
+		//--------------------------------
+
+		if (!runtimeData.ContainsKey(
+			victoryProvinceId))
+		{
+			Debug.LogError(
+				"存在しない victoryProvince: "
+				+ victoryProvinceId);
+
+			return;
+		}
+
+		if (!runtimeData.ContainsKey(
+			defeatProvinceId))
+		{
+			Debug.LogError(
+				"存在しない defeatProvince: "
+				+ defeatProvinceId);
+
+			return;
+		}
+
+		//--------------------------------
+		// 取得
+		//--------------------------------
+
 		var victory =
-			runtimeData[victoryProvince];
+			runtimeData[
+				victoryProvinceId];
 
 		var defeat =
-			runtimeData[defeatProvince];
+			runtimeData[
+				defeatProvinceId];
 
+		//--------------------------------
 		// 勝利判定
-		if (victory.ownerFaction
-			== playerFaction)
+		//--------------------------------
+
+		if (victory.owner.baseData.factionId
+			== playerFactionId)
 		{
 			OnGameWin();
 			return;
 		}
 
+		//--------------------------------
 		// 敗北判定
-		if (defeat.ownerFaction
-			!= playerFaction)
+		//--------------------------------
+
+		if (defeat.owner.baseData.factionId
+			!= playerFactionId)
 		{
 			OnGameLose();
 			return;
@@ -1275,22 +1400,118 @@ GetEnemyProvinces()
 			if (province.isUnlocked)
 				continue;
 
+			//--------------------------------
+			// required null 対策（重要）
+			//--------------------------------
+
+			if (province.baseData.requiredProvinces == null)
+				continue;
+
+			if (province.baseData.requiredProvinces.Count == 0)
+				continue;
+
 			bool allCaptured = true;
+
+			Debug.Log("Test CheckCheckpointUnlocks " +
+				province.baseData.requiredProvinces.Count);
+
+			//--------------------------------
+			// 必須拠点チェック
+			//--------------------------------
 
 			foreach (var req
 				in province.baseData.requiredProvinces)
 			{
-				var reqProvince =
-					runtimeData[req];
+				//--------------------------------
+				// req null 対策（重要）
+				//--------------------------------
+				//var reqProvince =
+				//runtimeData[req.provinceId];
 
-				if (reqProvince.ownerFaction
-					!= playerFaction)
+				//if (reqProvince.owner.baseData.factionId
+				//	!= playerFactionId)
+				//{
+				//	allCaptured = false;
+				//	break;
+				//}
+
+				if (req.provinceId == null)
+				{
+					Debug.LogError("req null");
+					allCaptured = false;
+					break;
+				}
+
+				//--------------------------------
+				// 空IDチェック（今回の原因）
+				//--------------------------------
+
+				if (string.IsNullOrEmpty(
+					req.provinceId))
+				{
+					Debug.LogError(
+						province.baseData.provinceName +
+						" provinceId が空");
+
+					continue;
+				}
+				//--------------------------------
+								// runtimeDataに存在するか
+								//--------------------------------
+
+				if (!runtimeData.ContainsKey(
+					req.provinceId))
+				{
+					Debug.LogError(
+						"存在しないprovinceId: " +
+						req.provinceId);
+
+					allCaptured = false;
+					break;
+				}
+
+				var reqProvince =
+					runtimeData[req.provinceId];
+
+				//--------------------------------
+				// ownerチェック（最重要）
+				//--------------------------------
+
+				if (reqProvince.owner == null)
+				{
+					Debug.LogError(
+						"owner null: " +
+						req);
+
+					allCaptured = false;
+					break;
+				}
+
+				//--------------------------------
+				// 所属チェック
+				//--------------------------------
+
+				if (reqProvince.owner.baseData == null)
+				{
+					Debug.LogError(
+						"owner.baseData null: " +
+						req);
+
+					allCaptured = false;
+					break;
+				}
+
+				if (reqProvince.owner.baseData.factionId
+					!= playerFactionId)
 				{
 					allCaptured = false;
 					break;
 				}
 			}
 
+			//--------------------------------
+			// 解放処理
+			//--------------------------------
 			if (allCaptured)
 			{
 				province.isUnlocked = true;
@@ -1439,4 +1660,152 @@ GetEnemyProvinces()
 			node.ClearHighlight();
 		}
 	}
+
+	public ProvinceRuntimeData
+	GetProvinceById(
+		string provinceID)
+	{
+		foreach (var p
+			in runtimeData.Values)
+		{
+			if (p.baseData
+				.provinceName
+				== provinceID)
+			{
+				return p;
+			}
+		}
+
+		return null;
+	}
+
+	public FactionRuntimeData
+	GetFactionById(
+		string factionId)
+	{
+		foreach (var f
+			in factionRuntimeDataDict
+				.Values)
+		{
+			if (f.baseData
+				.factionId
+				== factionId)
+			{
+				return f;
+			}
+		}
+
+		return null;
+	}
+	public void OnClickSave()
+	{
+		SaveManager.Instance
+			.SaveGame(this);
+	}
+
+	public void OnClickLoad()
+	{
+		SaveManager.Instance
+			.LoadGame(this);
+	}
+
+	public IEnumerable<ProvinceRuntimeData>
+	GetAllProvinces()
+	{
+		return runtimeData.Values;
+	}
+
+	public IEnumerable<FactionRuntimeData>
+	GetAllFactions()
+	{
+		return factionRuntimeDataDict.Values;
+	}
+
+	void RegisterProvinceNodes()
+	{
+		provinceNodeDict.Clear();
+
+		var nodes =
+			FindObjectsOfType<
+				ProvinceNode>();
+
+		foreach (var node in nodes)
+		{
+			if (provinceNodeDict
+				.ContainsKey(
+					node.provinceId))
+			{
+				Debug.LogError(
+					"Duplicate ProvinceNode ID: "
+					+ node.provinceId);
+
+				continue;
+			}
+
+			provinceNodeDict
+				.Add(
+					node.provinceId,
+					node);
+		}
+	}
+
+	ProvinceRuntimeData
+	GetProvinceRuntime(
+		string provinceId)
+	{
+		if (runtimeData
+			.TryGetValue(
+				provinceId,
+				out var runtime))
+		{
+			return runtime;
+		}
+
+		Debug.LogError(
+			"Province not found: "
+			+ provinceId);
+
+		return null;
+	}
+
+	List<ProvinceRuntimeData>
+	GetEnemyProvinces()
+	{
+		List<ProvinceRuntimeData>
+			result =
+			new List<
+				ProvinceRuntimeData>();
+
+		foreach (var province
+			in runtimeData.Values)
+		{
+			// プレイヤー以外
+			if (province.owner.baseData.factionId
+				!= playerFactionId)
+			{
+				result.Add(province);
+			}
+		}
+
+		return result;
+	}
+
+	public FactionRuntimeData
+	GetFaction(string factionId)
+	{
+		if (factionRuntimeDataDict
+			.TryGetValue(
+				factionId,
+				out var faction))
+		{
+			return faction;
+		}
+
+		Debug.LogError(
+			"Faction not found: "
+			+ factionId);
+
+		return null;
+	}
+
 }

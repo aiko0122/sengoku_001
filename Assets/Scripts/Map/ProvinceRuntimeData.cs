@@ -1,33 +1,66 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// 実行中の地域状態
-// ScriptableObjectとは別管理する
-
 public class ProvinceRuntimeData
 {
-	// 設計データ
-	public ProvinceData baseData;
+	//--------------------------------
+	// 元データ（Json）
+	//--------------------------------
 
-	// 所有勢力（後でFaction追加予定）
-	public FactionData ownerFaction;
-	//public FactionData faction;
+	public ProvinceMasterData baseData;
 
-	// 配置キャラ
+	//--------------------------------
+	// 表示ノード
+	//--------------------------------
+
+	public ProvinceNode node;
+
+	//--------------------------------
+	// 所有Faction
+	//--------------------------------
+	//public FactionData ownerFaction;
+	public FactionRuntimeData owner;
+
+	//--------------------------------
+	// 武将
+	//--------------------------------
+
 	public List<CharacterRuntimeData>
-		stationedCharacters;
+		characterList =
+			new List<CharacterRuntimeData>();
+	//characterList;
 
 	public const int MAX_CHARACTERS = 3;
 
-	// 関所設定
-	public bool isUnlocked;
 
+	//--------------------------------
+	// 隣接地域
+	//--------------------------------
+
+	public List<ProvinceRuntimeData>
+		neighbors =
+			new List<ProvinceRuntimeData>();
+
+	//--------------------------------
+	// 防御レベル
+	//--------------------------------
+
+	//public int defenseLevel = 1;
 	public int defense;
 	public int defenseLevel;
 
+	//--------------------------------
+	// ロック状態
+	//--------------------------------
+
+	//public bool isUnlocked = true;
+	public bool isUnlocked;
+
+	//--------------------------------
 	// コンストラクタ
+	//--------------------------------	
 	public ProvinceRuntimeData(
-		ProvinceData data)
+		ProvinceMasterData data)
 	{
 		baseData = data;
 
@@ -39,8 +72,12 @@ public class ProvinceRuntimeData
 			!data.isGate;
 
 		// リスト初期化（忘れるとエラー）
-		stationedCharacters =
-			new List<CharacterRuntimeData>();
+		var characterList = baseData.initialCharacterIds;
+			//new List<CharacterRuntimeData>();
+
+		Debug.Log("Test Load " +
+			baseData.provinceName + "  " +
+			defenseLevel);
 
 		// 初期所有者（仮）
 		//ownerFaction = "Neutral";
@@ -48,12 +85,12 @@ public class ProvinceRuntimeData
 
 	public bool CanAddCharacter()
 	{
-		return stationedCharacters.Count
+		return characterList.Count
 			< MAX_CHARACTERS;
 	}
 
 	public bool AddCharacter(
-	CharacterRuntimeData character)
+		CharacterRuntimeData ch)
 	{
 		if (!CanAddCharacter())
 		{
@@ -64,13 +101,22 @@ public class ProvinceRuntimeData
 			return false;
 		}
 
-		stationedCharacters.Add(character);
+		characterList.Add(ch);
 
 		Debug.Log(
 			baseData.provinceName +
 			" に追加：" +
-			character.characterName);
+			ch.baseData.characterName);
 
 		return true;
+	}
+	//--------------------------------
+	// 武将削除
+	//--------------------------------
+
+	public void RemoveCharacter(
+		CharacterRuntimeData ch)
+	{
+		characterList.Remove(ch);
 	}
 }

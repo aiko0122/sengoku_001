@@ -12,6 +12,7 @@ public class ProvinceData : ScriptableObject
 	[Header("基本情報")]
 
 	// 地域名（A-1など）
+	public string provinceId;
 	public string provinceName;
 
 	// ノード表示用アイコン

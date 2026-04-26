@@ -33,7 +33,7 @@ public class CharacterButton : MonoBehaviour
 
 		nameText.text =
 			//ch.baseData.characterName;
-			character.characterName
+			character.baseData.characterName
 			+ " (" +
 			character.soldierCount +
 			"êl)";

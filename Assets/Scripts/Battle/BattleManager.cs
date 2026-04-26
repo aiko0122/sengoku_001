@@ -26,7 +26,7 @@ public class BattleManager : MonoBehaviour
 	{
 		// 隣接チェック
 		if (!from.baseData.neighbors
-			.Contains(target.baseData))
+			.Contains(target.baseData.provinceId))
 		{
 			Debug.Log("隣接していない");
 			return;
@@ -38,8 +38,8 @@ public class BattleManager : MonoBehaviour
 			+ target.baseData.provinceName);
 
 		// 同勢力なら移動
-		if (from.ownerFaction
-			== target.ownerFaction)
+		if (from.owner
+			== target.owner)
 		{
 			mapManager.MoveOneCharacter(from, target, attackers);
 			return;
@@ -100,13 +100,13 @@ public class BattleManager : MonoBehaviour
 				target.baseData.provinceName);
 
 			// 旧勢力保存（重要）
-			FactionData oldFaction =
-				target.ownerFaction;
+			FactionRuntimeData oldFaction =
+				target.owner;
 
 			// 防衛側コピー
 			var defenders =
 				new List<CharacterRuntimeData>(
-					target.stationedCharacters);
+					target.characterList);
 
 			// =========================
 			// 防衛側退避処理
@@ -116,10 +116,10 @@ public class BattleManager : MonoBehaviour
 			{
 				Debug.Log(
 					"削除前：" +
-					target.stationedCharacters.Count);
+					target.characterList.Count);
 
 				// ★ 先に削除（重要）
-				target.stationedCharacters
+				target.characterList
 					.Remove(defender);
 				// ★ その後退避
 				mapManager.MoveCharacterToFriendlyProvince(
@@ -129,15 +129,15 @@ public class BattleManager : MonoBehaviour
 
 				Debug.Log(
 					"退避：" +
-					defender.characterName);
+					defender.baseData.characterName);
 			}
 
 			// =========================
 			// 勢力変更
 			// =========================
 
-			target.ownerFaction =
-				from.ownerFaction;
+			target.owner =
+				from.owner;
 
 			// =========================
 			// 攻撃側前進
@@ -150,15 +150,15 @@ public class BattleManager : MonoBehaviour
 
 			foreach (var attacker in movingAttackers)
 			{
-				from.stationedCharacters
+				from.characterList
 					.Remove(attacker);
 
-				target.stationedCharacters
+				target.characterList
 					.Add(attacker);
 
 				Debug.Log(
 					"前進：" +
-					attacker.characterName);
+					attacker.baseData.characterName);
 			}
 
 			mapManager.CheckCheckpointUnlocks();
@@ -260,7 +260,7 @@ public class BattleManager : MonoBehaviour
 
 		// 武将防御を加算
 		foreach (var ch
-			in province.stationedCharacters)
+			in province.characterList)
 		{
 			total += ch.GetDefense();
 
@@ -280,7 +280,7 @@ public class BattleManager : MonoBehaviour
 
 			if (ch.battleCount == 10)
 			{
-				if (Random.value > ch.levelUpRate)
+				if (Random.value > ch.baseData.levelUpRate)
 				{
 					ch.attack++;
 					Debug.Log("attack++");
@@ -311,14 +311,14 @@ public class BattleManager : MonoBehaviour
 				attacker.soldierCount = 1;
 
 			Debug.Log(
-				attacker.characterName +
+				attacker.baseData.characterName +
 				" 攻撃側ダメージ -" +
 				attackerDamage);
 		}
 
 		// 防御側ダメージ
 		foreach (var defender
-			in defenderProvince.stationedCharacters)
+			in defenderProvince.characterList)
 		{
 			defender.soldierCount
 				-= defenderDamage;
@@ -327,7 +327,7 @@ public class BattleManager : MonoBehaviour
 				defender.soldierCount = 1;
 
 			Debug.Log(
-				defender.characterName +
+				defender.baseData.characterName +
 				" 防御側ダメージ -" +
 				defenderDamage);
 		}
@@ -336,7 +336,7 @@ public class BattleManager : MonoBehaviour
 	void RemoveDeadCharacters(
 	ProvinceRuntimeData province)
 	{
-		province.stationedCharacters
+		province.characterList
 			.RemoveAll(
 				c => c.soldierCount <= 0);
 	}

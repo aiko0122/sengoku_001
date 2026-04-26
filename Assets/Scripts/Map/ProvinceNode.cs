@@ -5,91 +5,132 @@ using UnityEngine.UI;
 
 public class ProvinceNode : MonoBehaviour
 {
-	public ProvinceData provinceData;
+	//--------------------------------
+	// Jsonと接続するID
+	//--------------------------------
 
-	private MapManager mapManager;
+	[Header("Province ID")]
+	public string provinceId;
 
-	//Image image;
-	//Outline outline;
+	//--------------------------------
+	// UI参照
+	//--------------------------------
 
+	[Header("UI References")]
 	[SerializeField] Image baseImage;
-	[SerializeField] Image highlightOverlay;
-	[SerializeField] Image lockedOverlay;
-
-	//[SerializeField] Image defenseOverlay;
-
 	[SerializeField]
 		List<Sprite>
 		defenseOverlaySprites;
+	[SerializeField] Image highlightOverlay;
+	[SerializeField] Image lockedOverlay;
 
-	TextMeshProUGUI countText;
-	TextMeshProUGUI placeText;
+	[SerializeField] TextMeshProUGUI countText;
+	[SerializeField] TextMeshProUGUI placeText;
 
-	[SerializeField]
-	Color selectedColor = Color.yellow;
+	[SerializeField] Color selectedColor = Color.yellow;
+	[SerializeField] Color moveColor = Color.green;
+	[SerializeField] Color attackColor = Color.red;
+	[SerializeField] Color lockedColor;
 
-	[SerializeField]
-	Color moveColor = Color.green;
+	//--------------------------------
+	// 内部
+	//--------------------------------
 
-	[SerializeField]
-	Color attackColor = Color.red;
+	private MapManager mapManager;
 
-	[SerializeField]
-	Color lockedColor;
-
+	//--------------------------------
+	// 初期化
+	//--------------------------------
 	void Awake()
 	{
 		mapManager =
 			FindObjectOfType<MapManager>();
 
-		if (baseImage == null)
-		{
-			Debug.LogError(
-				gameObject.name +
-				" BaseImage未設定");
-		}
-
-		//if (defenseOverlay == null)
+		//if (baseImage == null)
 		//{
 		//	Debug.LogError(
 		//		gameObject.name +
-		//		" DefenseOverlay未設定");
+		//		" BaseImage未設定");
 		//}
 
-		var count =
-			transform.Find("CountText");
+		//var count =
+		//	transform.Find("CountText");
 
-		if (count != null)
-		{
-			countText =
-				count.GetComponent<
-					TextMeshProUGUI>();
-		}
+		//if (count != null)
+		//{
+		//	countText =
+		//		count.GetComponent<
+		//			TextMeshProUGUI>();
+		//}
 
-		var place =
-			transform.Find("PlaceText");
+		//var place =
+		//	transform.Find("PlaceText");
 
-		if (place != null)
-		{
-			placeText =
-				place.GetComponent<
-					TextMeshProUGUI>();
+		//if (place != null)
+		//{
+		//	placeText =
+		//		place.GetComponent<
+		//			TextMeshProUGUI>();
 
-			UpdatePlaceName();
-		}
+		//	UpdatePlaceName();
+		//}
 
-		UpdateDefenseOverlay(provinceData.initialDefenseLevel);
+		//UpdateDefenseOverlay(provinceData.initialDefenseLevel);
 	}
-	public void UpdatePlaceName()
+
+	//--------------------------------
+	// クリック
+	//--------------------------------
+
+	public void OnClick()
 	{
-		if (placeText == null)
-			return;
+		if (mapManager != null)
+		{
+			mapManager
+				.OnProvinceClicked(this);
+		}
+	}
+	//--------------------------------
+	// ロック表示
+	//--------------------------------
 
-		if (provinceData == null)
-			return;
+	public void SetLocked(
+		bool locked)
+	{
+		if (lockedOverlay != null)
+		{
+			lockedOverlay
+				.gameObject
+				.SetActive(locked);
+		}
+	}
 
-		placeText.text =
-			provinceData.provinceName;
+	//--------------------------------
+	// 所有色変更
+	//--------------------------------
+
+	public void SetFactionColor(
+		Color color)
+	{
+		if (baseImage != null)
+		{
+			baseImage.color =
+				color;
+		}
+	}
+
+	//--------------------------------
+	// 名前表示
+	//--------------------------------
+
+	public void SetNameText(
+		string name)
+	{
+		if (placeText != null)
+		{
+			placeText.text =
+				name;
+		}
 	}
 
 	public void UpdateColor(
@@ -104,7 +145,7 @@ public class ProvinceNode : MonoBehaviour
 			return;
 		}
 
-		FactionData faction = runtime.ownerFaction;
+		FactionRuntimeData faction = runtime.owner;
 
 		if (faction == null)
 		{
@@ -114,8 +155,12 @@ public class ProvinceNode : MonoBehaviour
 			return;
 		}
 
+		Debug.Log("Test 色" +
+			faction.baseData.factionName +
+			faction.color);
+
 		baseImage.color =
-			faction.factionColor;
+			faction.color;
 
 		if (!runtime.isUnlocked)
 		{
@@ -181,26 +226,6 @@ public class ProvinceNode : MonoBehaviour
 		SetHighlightAlpha(0f);
 	}
 
-	//public void ShowOutline(Color color)
-	//{
-	//	if (outline == null)
-	//		return;
-
-	//	outline.enabled = true;
-
-	//	outline.effectColor = color;
-	//}
-
-	//public void HideOutline()
-	//{
-	//	//if (outline == null)
-	//	//	return;
-
-	//	//outline.enabled = false;
-
-	//	//highlightOverlay;
-	//}
-
 	public void UpdateDefenseOverlay(
 		int defenseLevel)
 	{
@@ -216,7 +241,7 @@ public class ProvinceNode : MonoBehaviour
 		else if (defenseLevel < 8) { stkDefenseLevel = 1; }
 		else { stkDefenseLevel = 2; }
 
-		Debug.Log(provinceData.provinceName + stkDefenseLevel);
+		//Debug.Log(provinceData.provinceName + stkDefenseLevel);
 
 		if (stkDefenseLevel >=
 			defenseOverlaySprites.Count)
@@ -233,6 +258,10 @@ public class ProvinceNode : MonoBehaviour
 		//		stkDefenseLevel];
 	}
 
+	//--------------------------------
+	// ハイライト制御
+	//--------------------------------
+
 	public void SetHighlight(
 		Color color,
 		float alpha)
@@ -245,6 +274,7 @@ public class ProvinceNode : MonoBehaviour
 		highlightOverlay.color =
 			color;
 	}
+
 
 	public void SetHighlightAlpha(
 		float alpha)
@@ -261,14 +291,4 @@ public class ProvinceNode : MonoBehaviour
 			color;
 	}
 
-	public void OnClick()
-	{
-		//mapManager.OnProvinceClicked(
-		//	provinceData);
-		Debug.Log("Province Click");
-
-		mapManager.OnProvinceClicked(
-			this);
-
-	}
 }
