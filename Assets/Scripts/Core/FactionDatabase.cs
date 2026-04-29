@@ -48,9 +48,9 @@ public static class FactionDatabase
 
 		factions = data.factions;
 
-		Debug.Log(
-			"Faction loaded: "
-			+ factions.Count);
+		//Debug.Log(
+		//	"Faction loaded: "
+		//	+ factions.Count);
 	}
 
 	//--------------------------------

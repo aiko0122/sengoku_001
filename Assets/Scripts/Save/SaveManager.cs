@@ -5,6 +5,7 @@ public class SaveManager :
 	MonoBehaviour
 {
 	public static SaveManager Instance;
+	MapManager map;
 
 	string savePath;
 
@@ -18,6 +19,11 @@ public class SaveManager :
 		savePath =
 			Application.persistentDataPath +
 			"/save.json";
+	}
+	public SaveManager(
+		MapManager mapManager)
+	{
+		map = mapManager;
 	}
 
 	//--------------------------------
@@ -128,6 +134,11 @@ public class SaveManager :
 			"Save Complete: " +
 			savePath);
 	}
+	public void OnClickSave()
+	{
+		SaveGame(map);
+	}
+
 
 	//--------------------------------
 	// LOAD
@@ -224,4 +235,11 @@ public class SaveManager :
 
 		Debug.Log("Load Complete");
 	}
+
+	public void OnClickLoad()
+	{
+		LoadGame(map);
+	}
+
+
 }

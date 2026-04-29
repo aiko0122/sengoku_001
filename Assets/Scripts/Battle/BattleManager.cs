@@ -156,9 +156,9 @@ public class BattleManager : MonoBehaviour
 				target.characterList
 					.Add(attacker);
 
-				Debug.Log(
-					"前進：" +
-					attacker.baseData.characterName);
+				//Debug.Log(
+				//	"前進：" +
+				//	attacker.baseData.characterName);
 			}
 
 			mapManager.CheckCheckpointUnlocks();

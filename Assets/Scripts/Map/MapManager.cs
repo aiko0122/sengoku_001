@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿//using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -11,134 +12,79 @@ using static UnityEngine.GraphicsBuffer;
 
 public class MapManager : MonoBehaviour
 {
-	[Header("初期所有者設定")]
+	//public const string playerFactionId = "001";
+	string enemyFactionId = "002";
+	string neutralFactionId = "100";
 
-	//[SerializeField] FactionData playerFaction;
-	string playerFactionId = "001";
-	public FactionData enemyFaction;
-	public FactionData neutralFaction;
+	[Header("UI設定")]
+	[SerializeField] TextMeshProUGUI turnText;
+	[SerializeField] TextMeshProUGUI goldText;
 
-	[SerializeField]
-	TextMeshProUGUI goldText;
+	// キャラクター選択パネル
+	[SerializeField] public GameObject characterPanel;
+	[SerializeField] TextMeshProUGUI selectedCountText;
+	[SerializeField] Transform characterListParent;
+	[SerializeField] GameObject characterButtonPrefab;
+
+	// 攻撃確認パネル
+	[SerializeField] public GameObject confirmAttackPanel;
+	//[SerializeField] Button confirmAttackButton;
+	//[SerializeField] Button cancelAttackButton;
+	//[SerializeField] TextMeshProUGUI attackerListText;
+	//[SerializeField] TextMeshProUGUI defenderListText;
+	//[SerializeField] TextMeshProUGUI powerText;
+	//[SerializeField] TextMeshProUGUI confirmMessageText;
+	
+	// 移動確認パネル
+	[SerializeField] public GameObject confirmMovePanel;
+	[SerializeField] TextMeshProUGUI moveMessageText;
+	[SerializeField] TextMeshProUGUI moveCharacterListText;
+
+	[SerializeField] GameObject winPanel;
+	[SerializeField] GameObject losePanel;
 
 	//[Header("初期武将")]
 
 	//[SerializeField]
 	//private CharacterDatabase characterDatabase;
 
-	[Header("勝敗条件")]
+	//[Header("勝敗条件")]
 
-	[SerializeField]
-		string victoryProvinceId;
-
-	[SerializeField]
-		string defeatProvinceId;
+	//[SerializeField] string victoryProvinceId;
+	//[SerializeField] string defeatProvinceId;
 
 	[Header("補充設定")]
 
-	[SerializeField]
-	int reinforceAmount = 50;
-
-	[SerializeField]
-	int reinforceCost = 100;
+	[SerializeField] int reinforceAmount = 50;
+	[SerializeField] int reinforceCost = 100;
 
 	[Header("全地域データ")]
 
-	// InspectorでA-1〜A-7登録
-	//public List<ProvinceData>
-	//	allProvinceData =
-	//	new List<ProvinceData>();
-	List<ProvinceData>
-	allProvinceData =
-		new List<ProvinceData>();
-
-	// 実行中データ管理
-	Dictionary<
-		string,
-		ProvinceRuntimeData>
+	// Dictionary
+	Dictionary<string, ProvinceRuntimeData>
 		runtimeData =
-			new Dictionary<
-				string,
-				ProvinceRuntimeData>();
+			new Dictionary<string, ProvinceRuntimeData>();
 
-	Dictionary<
-		string,
-		ProvinceNode>
+	Dictionary<string, ProvinceNode>
 		provinceNodeDict =
-			new Dictionary<
-				string,
-				ProvinceNode>();
+			new Dictionary<string, ProvinceNode>();
+
+	Dictionary<FactionData, FactionRuntimeData>
+		factionRuntimeData;
+
+	Dictionary<string, FactionRuntimeData>
+		factionRuntimeDataDict =
+			new Dictionary<string, FactionRuntimeData>();
 
 	[SerializeField]
 	BattleManager battleManager;
 
 	[SerializeField]
-		List<FactionData>
+	List<FactionData>
 		allFactions;
-
-	Dictionary<
-		FactionData,
-		FactionRuntimeData>
-		factionRuntimeData;
 
 	FactionRuntimeData
 		playerFactionRuntime;
-
-	Dictionary<
-		string,
-		FactionRuntimeData>
-		factionRuntimeDataDict =
-			new Dictionary<
-				string,
-				FactionRuntimeData>();
-
-	[SerializeField]
-	GameObject characterPanel;
-
-	[SerializeField]
-	TextMeshProUGUI selectedCountText;
-
-	[SerializeField]
-	Transform characterListParent;
-
-	[SerializeField]
-	GameObject characterButtonPrefab;
-
-	[SerializeField]
-	GameObject confirmAttackPanel;
-
-	[SerializeField]
-	TextMeshProUGUI confirmMessageText;
-
-	[SerializeField]
-	Button confirmAttackButton;
-
-	[SerializeField]
-	Button cancelAttackButton;
-
-	[SerializeField]
-	TextMeshProUGUI attackerListText;
-
-	[SerializeField]
-	TextMeshProUGUI defenderListText;
-
-	[SerializeField]
-	TextMeshProUGUI powerText;
-
-	[SerializeField]
-	GameObject confirmMovePanel;
-
-	[SerializeField]
-	TextMeshProUGUI moveMessageText;
-
-	[SerializeField]
-	TextMeshProUGUI moveCharacterListText;
-
-	[SerializeField]
-	GameObject winPanel;
-
-	[SerializeField]
-	GameObject losePanel;
 
 	// 現在選択中地域
 	ProvinceRuntimeData selectedProvince;
@@ -162,30 +108,50 @@ public class MapManager : MonoBehaviour
 
 	// ProvinceNode fromNode;
 	ProvinceNode toNode;
+	ProvinceNode[] provinceNodes;
 
 	ProvinceRuntimeData pendingFrom;
 	ProvinceRuntimeData pendingTarget;
 	List<CharacterRuntimeData> pendingAttackers;
 
+	VictoryManager victoryManager;
+	ProvinceSelectionManager provinceSelectionManager;
+	CharacterManager characterManager;
+	SaveManager saveManager;
+	[SerializeField] BattleUIHandler battleUIHandler;
+
 
 	void Start()
 	{
 		CharacterDatabase.Load();
-		InitializeRuntimeData();
 
-		Debug.Log("Gold " + playerFactionRuntime.gold);
+		victoryManager =
+			new VictoryManager(this);
+		provinceSelectionManager =
+			new ProvinceSelectionManager(this);
+		characterManager =
+			new CharacterManager(this);
+		saveManager = new SaveManager(this);
+
+		battleUIHandler.Initialize(this);
+
+		InitializeRuntimeData();
+		//InitializeProvinceNodes();
+
+		//Debug.Log("Gold " + playerFactionRuntime.gold);
 
 		UpdateGoldUI();
 		battleManager.Initialize(this);
 
 		StartPlayerTurn();
 	}
+
 	void Update()
 	{
 		// 右クリック
 		if (Input.GetMouseButtonDown(1))
 		{
-			CancelSelection();
+			provinceSelectionManager.CancelSelection();
 		}
 	}
 
@@ -197,9 +163,12 @@ public class MapManager : MonoBehaviour
 			AddTurnIncome();
 		}
 
-		Debug.Log(
-			"ターン " +
-			currentTurn);
+		turnText.text =
+			"ターン数：" + currentTurn;
+
+		//Debug.Log(
+		//	"ターン " +
+		//	currentTurn);
 
 		Debug.Log(
 			"プレイヤーターン開始");
@@ -232,10 +201,10 @@ public class MapManager : MonoBehaviour
 			in runtimeData.Values)
 		{
 			if (province.owner.baseData.factionId
-				== playerFactionId)
+				== Constants.playerFactionId)
 			{
 				totalIncome +=
-					province.baseData.income;
+					province.income;
 			}
 		}
 
@@ -246,27 +215,6 @@ public class MapManager : MonoBehaviour
 
 		Debug.Log(
 			"収入：" + totalIncome);
-	}
-
-	public void CancelSelection()
-	{
-		if (selectedNode == null)
-			return;
-
-		selectedNode.SetSelected(false);
-
-		// CharacterPanel を閉じる
-		if (characterPanel != null)
-		{
-			characterPanel.SetActive(false);
-		}
-
-		ClearSelectedNode();
-		selectedProvince = null;
-
-		UpdateAllNodeColors();
-
-		Debug.Log("選択キャンセル");
 	}
 
 	// 実行用データ作成
@@ -338,6 +286,7 @@ public class MapManager : MonoBehaviour
 
 		SetInitialOwners();
 		SetInitialCharacters();
+		InitializeProvinceNodes();
 		//--------------------------------
 		// 色更新
 		//--------------------------------
@@ -362,13 +311,21 @@ public class MapManager : MonoBehaviour
 					master.factionId,
 					runtime);
 
-			if (master.factionId == playerFactionId)
+			if (master.factionId == Constants.playerFactionId)
 			{
 				playerFactionRuntime = runtime;
 			}
 		}
 	}
+	void InitializeProvinceNodes()
+	{
+		provinceNodes =
+			FindObjectsOfType<ProvinceNode>();
 
+		Debug.Log(
+			"ProvinceNode数: "
+			+ provinceNodes.Length);
+	}
 	void SetInitialOwners()
 	{
 		foreach (var master
@@ -385,7 +342,7 @@ public class MapManager : MonoBehaviour
 					.initialOwner;
 
 			var faction =
-			//GetFaction(factionId);
+				//GetFaction(factionId);
 				GetFactionById(
 					province.baseData
 						.initialOwner);
@@ -416,9 +373,9 @@ public class MapManager : MonoBehaviour
 			if (master
 				.initialCharacterIds == null)
 			{
-				Debug.LogError(
-					"Character create Non "
-					);
+				//Debug.LogError(
+				//	"Character create Non "
+				//	);
 
 				continue;
 			}
@@ -430,7 +387,7 @@ public class MapManager : MonoBehaviour
 			foreach (var charId
 				in master.initialCharacterIds)
 			{
-				Debug.Log("Set Init Char" + charId);
+				//Debug.Log("Set Init Char" + charId);
 				var character =
 				CharacterFactory
 					.CreateCharacter(
@@ -438,9 +395,9 @@ public class MapManager : MonoBehaviour
 
 				if (character == null)
 				{
-					Debug.LogError(
-						"Character create failed: "
-						+ charId);
+					//Debug.LogError(
+					//	"Character create failed: "
+					//	+ charId);
 
 					continue;
 				}
@@ -459,11 +416,11 @@ public class MapManager : MonoBehaviour
 				province.characterList
 					.Add(character);
 
-				Debug.Log(
-					"Added: "
-					+ character.baseData.characterName
-					+ " → "
-					+ province.baseData.provinceName);
+				//Debug.Log(
+				//	"Added: "
+				//	+ character.baseData.characterName
+				//	+ " → "
+				//	+ province.baseData.provinceName);
 			}
 		}
 	}
@@ -471,49 +428,8 @@ public class MapManager : MonoBehaviour
 	public CharacterRuntimeData CreateCharacter(
 		string characterId)
 	{
-		var master =
-			CharacterDatabase
-				.GetCharacter(characterId);
-
-		if (master == null)
-		{
-			Debug.LogWarning(
-				"武将生成失敗: " +
-				characterId);
-
-			return null;
-		}
-
-		var runtime =
-			new CharacterRuntimeData(
-				master);
-
-		//runtime.characterId		= master.characterId;
-		//runtime.characterName	= master.characterName;
-
-		//runtime.attack			= master.initialAttack;
-		//runtime.defense			= master.initialDefense;
-		//runtime.leadership		= master.leadership;
-		//runtime.soldierCount	= master.maxSoldier;
-
-		//runtime.skillIds =
-		//	new List<string>(
-		//		master.initialSkillIds);
-
-		//runtime.equipmentId =
-		//	master.initialEquipmentId;
-
-		// ★画像読み込み
-		//runtime.portrait =
-		//	Resources.Load<Sprite>(
-		//		"Portraits/" +
-		//		master.portraitId);
-
-		Debug.Log(
-			"武将生成: " +
-			master.characterName);
-
-		return runtime;
+		characterManager.CreateCharacter(characterId);
+		return null;
 	}
 
 	//public static class CharacterFactory
@@ -540,19 +456,7 @@ public class MapManager : MonoBehaviour
 	//			master);
 	//	}
 	//}
-	void ReinforceProvince(
-		ProvinceRuntimeData province,
-		string characterId)
-	{
-		var character =
-			CreateCharacter(characterId);
 
-		if (character == null)
-			return;
-
-		province.characterList
-			.Add(character);
-	}
 
 	void AddCharacterToProvince(
 	ProvinceRuntimeData province,
@@ -663,7 +567,7 @@ public class MapManager : MonoBehaviour
 			var attacker =
 				province.characterList[0];
 
-			int toNeighbor = Random.Range(0, 
+			int toNeighbor = Random.Range(0,
 				(province.baseData.neighbors.Count + 1));
 
 			int loopCount = 0;
@@ -731,134 +635,12 @@ public class MapManager : MonoBehaviour
 	public void OnProvinceClicked(
 		ProvinceNode node)
 	{
-		if (isGameOver) return;
-
-		if (!isPlayerTurn)
-		{
-			Debug.Log("敵ターン中");
-			return;
-		}
-
-		var runtime =
-			runtimeData[
-				node.provinceId]; 
-
-		if (runtime == null)
-		{
-			Debug.LogError(
-				"Province not found: "
-				+ node.provinceId);
-
-			return;
-		}
-
-		// =========================
-		// ■1回目クリック（出発地選択）
-		// =========================
-		if (selectedNode == null)
-		{
-			selectedProvince = runtime;
-			SetSelectedNode(node);
-
-			UpdateAllNodeColors();
-
-			if (selectedProvince.owner.baseData.factionId
-				== playerFactionId)
-			{
-				Debug.Log("勢力：Player");
-				HighlightNeighbors(runtime);
-			}
-			else
-			{
-				Debug.Log("勢力：Player以外");
-			}
-
-			Debug.Log(
-				"出発地選択：" +
-				runtime.baseData.provinceName);
-
-			Debug.Log(
-				"地域情報メニュー表示：" +
-				runtime.baseData.provinceName);
-
-			return;
-		}
-
-		if (selectedProvince.owner.baseData.factionId
-			!= playerFactionId)
-		{
-			ClearSelectedNode();
-			UpdateAllNodeColors();
-			ClearAllHighlights();
-			return;
-		}
-
-		// =========================
-		// ■同じ地域クリック → 開発メニュー
-		// =========================
-		if (selectedNode == node)
-		{
-			selectedProvince = null;
-			ClearSelectedNode();
-			ClearAllHighlights();
-
-			Debug.Log("選択解除"); 
-			
-			Debug.Log(
-				"開発メニュー表示：" +
-				runtime.baseData.provinceName);
-
-			ShowDevelopmentMenu(runtime);
-
-			return;
-		}
-
-		// =========================
-		// ■2回目クリック（目的地選択）
-		// =========================
-		if (toNode == null)
-		{
-
-			var targetProvince = runtime;
-
-			if (!targetProvince.isUnlocked)
-			{
-				Debug.Log(
-					targetProvince.baseData.provinceName +
-					" は通行不可");
-				return;
-			}
-
-			toNode = node;
-			toProvince = targetProvince;
-
-			Debug.Log(
-				"目的地選択：" +
-				runtime.baseData.provinceName);
-
-			// ★ここで武将選択を表示
-			ShowCharacterList(selectedProvince);
-
-			// ■必ずここで解除
-			// ClearSelectedNode();
-			// selectedProvince = null;
-
-			UpdateAllNodeColors();
-			ClearAllHighlights();
-
-			return;
-		}
-
-		// =========================
-		// ■3回目クリック（再選択 or リセット）
-		// =========================
-		ResetSelection();
-
+		provinceSelectionManager.OnProvinceClicked(node);
 	}
 
-	void ResetSelection()
+	public void ResetSelection()
 	{
-		
+
 		ClearSelectedNode();
 		// fromNode = null;
 		toNode = null;
@@ -875,41 +657,41 @@ public class MapManager : MonoBehaviour
 
 		UpdateAllNodeColors();
 
-		Debug.Log("選択リセット");
+		//Debug.Log("選択リセット");
 	}
 
-	void TryAction(
-	ProvinceRuntimeData from,
-	ProvinceRuntimeData target,
-	List<CharacterRuntimeData> attackers)
-	{
-
-		// 同勢力 → 移動
-		if (from.owner
-			== target.owner)
+	public void TryAction(
+		ProvinceRuntimeData from,
+		ProvinceRuntimeData target,
+		List<CharacterRuntimeData> attackers)
 		{
-			ShowMoveConfirm(from, target, attackers);
 
-			Debug.Log(
-				"移動：" +
-				from.baseData.provinceName +
-				" → " +
-				target.baseData.provinceName);
+			// 同勢力 → 移動
+			if (from.owner
+				== target.owner)
+			{
+				ShowMoveConfirm(from, target, attackers);
 
-			return;
+				//Debug.Log(
+				//	"移動：" +
+				//	from.baseData.provinceName +
+				//	" → " +
+				//	target.baseData.provinceName);
+
+				return;
+			}
+
+			// 敵勢力 → 攻撃
+			ShowAttackConfirm(
+				from,
+				target,
+				attackers);
+			//Debug.Log(
+			//	"攻撃：" +
+			//	from.baseData.provinceName +
+			//	" → " +
+			//	target.baseData.provinceName);
 		}
-
-		// 敵勢力 → 攻撃
-		ShowAttackConfirm(
-			from,
-			target,
-			attackers);
-		Debug.Log(
-			"攻撃：" +
-			from.baseData.provinceName +
-			" → " +
-			target.baseData.provinceName);
-	}
 
 	void ShowAttackConfirm(
 		ProvinceRuntimeData from,
@@ -924,34 +706,13 @@ public class MapManager : MonoBehaviour
 				attackers);
 
 		// タイトル
-		confirmMessageText.text =
-			target.baseData.provinceName +
-			" を攻撃しますか？";
+		battleUIHandler.SetMessageText(target.baseData.provinceName);
 
 		// 攻撃側表示
-		string attackerText = "攻撃側：\n";
-
-		foreach (var ch in attackers)
-		{
-			attackerText +=
-				ch.baseData.characterName + "\n";
-		}
-
-		attackerListText.text =
-			attackerText;
+		battleUIHandler.SetAttackerListText(attackers);
 
 		// 防御側表示
-		string defenderText = "防御側：\n";
-
-		foreach (var ch
-			in target.characterList)
-		{
-			defenderText +=
-				ch.baseData.characterName + "\n";
-		}
-
-		defenderListText.text =
-			defenderText;
+		battleUIHandler.SetDefenderListText(target.characterList);
 
 		battleManager.addBattleCount(attackers);
 		battleManager.addBattleCount(target.characterList);
@@ -963,17 +724,15 @@ public class MapManager : MonoBehaviour
 		int defensePower =
 			battleManager.GetDefensePower(target);
 
-		powerText.text =
-			"攻撃力：" + attackPower +
-			"\n防御力：" + defensePower;
+		battleUIHandler.SetPowerText(attackPower,defensePower);
 
 		confirmAttackPanel.SetActive(true);
 	}
 
 	void ShowMoveConfirm(
-	ProvinceRuntimeData from,
-	ProvinceRuntimeData target,
-	List<CharacterRuntimeData> characters)
+		ProvinceRuntimeData from,
+		ProvinceRuntimeData target,
+		List<CharacterRuntimeData> characters)
 	{
 		pendingFrom = from;
 		pendingTarget = target;
@@ -1005,96 +764,26 @@ public class MapManager : MonoBehaviour
 
 	public void UpdateAllNodeColors()
 	{
-		var nodes =
-			FindObjectsOfType<ProvinceNode>();
+		provinceSelectionManager.UpdateAllNodeColors();
+	}
 
-		foreach (var node in nodes)
-		{
-
-			var runtime =
-				runtimeData[node.provinceId];
-
-			// 色更新
-			node.UpdateColor(runtime);
-				//runtime.owner);
-
-			node.ClearHighlight();
-
-			// 人数更新
-			int count =
-				runtime.characterList.Count;
-
-			node.UpdateCount(count);
-
-		}
-
-
-		// 選択中ノードの上書き
-		if (selectedNode != null)
-		{
-			//Debug.Log("test True");
-			// 色更新
-			selectedNode.SetSelected(true);
-		}
-		else
-		{
-			//Debug.Log("test False");
-		}
+	public void SetMoveOneCharacter()
+	{
+		MoveOneCharacter(
+			pendingFrom,
+			pendingTarget,
+			pendingAttackers);
 	}
 
 	public void MoveOneCharacter(
-	ProvinceRuntimeData from,
-	ProvinceRuntimeData to,
-	List<CharacterRuntimeData> attackers)
+		ProvinceRuntimeData from,
+		ProvinceRuntimeData to,
+		List<CharacterRuntimeData> attackers)
 	{
-		// 移動元に武将がいない
-		if (from.characterList.Count == 0)
-		{
-			Debug.Log("移動元に武将なし");
-			return;
-		}
-
-		// 移動先が満員
-		if (!to.CanAddCharacter())
-		{
-			Debug.Log("移動先は満員");
-			return;
-		}
-
-		// 武将を取得
-		var movingAttackers =
-			new List<CharacterRuntimeData>(
-				attackers);
-
-		foreach (var attacker in movingAttackers)
-		{
-			Debug.Log(
-				"削除前：" +
-				from.characterList.Count);
-
-			// 移動元から削除
-			from.characterList
-				.Remove(attacker);
-			// 移動先へ追加
-			to.AddCharacter(attacker);
-
-			Debug.Log(
-				"退避：" +
-				attacker.baseData.characterName);
-		}
-
-		//// 移動元から削除
-		//from.stationedCharacters.Remove(character);
-
-		//// 移動先へ追加
-		//to.AddCharacter(character);
-
-		selectedNode = null;
-		UpdateAllNodeColors();
-
+		provinceSelectionManager.MoveOneCharacter(from, to, attackers);
 	}
 
-	void HighlightNeighbors(
+	public void HighlightNeighbors(
 	ProvinceRuntimeData from)
 	{
 		foreach (var neighborData
@@ -1127,7 +816,7 @@ public class MapManager : MonoBehaviour
 
 	ProvinceNode GetNodeByProvinceData(
 		string data)
-		//ProvinceData data)
+	//ProvinceData data)
 	{
 		var nodes =
 			FindObjectsOfType<ProvinceNode>();
@@ -1148,34 +837,13 @@ public class MapManager : MonoBehaviour
 		FactionRuntimeData oldFaction,
 		ProvinceRuntimeData lostProvince)
 	{
-		foreach (var province
-			in runtimeData.Values)
-		{
-			// ★ 占領された地域は除外
-			if (province == lostProvince)
-				continue;
-
-			if (province.owner
-				== oldFaction)
-			{
-				province.characterList
-					.Add(character);
-
-				Debug.Log(
-					"退避：" +
-					character.baseData.characterName + 
-					" → " +
-					province.baseData.provinceName);
-				return;
-			}
-		}
-
-		Debug.Log(
-			"退避先なし：" +
-			character.baseData.characterName);
+		provinceSelectionManager.MoveCharacterToFriendlyProvince(
+			character,
+			oldFaction,
+			lostProvince);
 	}
 
-	void ShowCharacterList(
+	public void ShowCharacterList(
 	ProvinceRuntimeData province)
 	{
 		if (characterListParent == null)
@@ -1232,44 +900,23 @@ public class MapManager : MonoBehaviour
 		characterPanel.SetActive(true);
 	}
 
-	void SelectedCountUpdate()
+	public void SelectedCountUpdate()
 	{
 		selectedCountText.text =
 			"選択：" +
 			selectedCharacters.Count +
 			"人";
 
-		Debug.Log(
-			"選択人数：" +
-			selectedCharacters.Count);
+		//Debug.Log(
+		//	"選択人数：" +
+		//	selectedCharacters.Count);
 	}
 
-	//public void OnCharacterSelected(
-	//	CharacterRuntimeData character,
-	//	CharacterButton button)
-	//{
-		//// 前の選択を戻す
-		//if (selectedCharacterButton != null)
-		//{
-		//	selectedCharacterButton.SetNormal();
-		//}
-
-		//// 新しい選択
-		//selectedCharacter = character;
-
-		//selectedCharacterButton = button;
-
-		//// 色変更
-		//selectedCharacterButton.SetSelected();
-
-		//Debug.Log(
-		//	"武将選択：" +
-		//	character.baseData.characterName);
-	//}
-
 	public void AddSelectedCharacter(
-	CharacterRuntimeData character)
+		CharacterRuntimeData character)
 	{
+		//characterManager.AddSelectedCharacter(character);
+
 		if (selectedCharacters
 			.Count >= 3)
 		{
@@ -1293,6 +940,9 @@ public class MapManager : MonoBehaviour
 	public void RemoveSelectedCharacter(
 		CharacterRuntimeData character)
 	{
+		//characterManager.RemoveSelectedCharacter(character);
+		//Debug.Log("SelectedCharacters Count:" + selectedCharacters.Count);
+
 		if (selectedCharacters
 			.Contains(character))
 		{
@@ -1306,293 +956,23 @@ public class MapManager : MonoBehaviour
 
 	public void CheckVictoryDefeat()
 	{
-		//--------------------------------
-		// nullチェック
-		//--------------------------------
-
-		if (victoryProvinceId == null ||
-			string.IsNullOrEmpty(
-				victoryProvinceId))
-		{
-			Debug.LogError(
-				"victoryProvince 未設定");
-
-			return;
-		}
-
-		if (defeatProvinceId == null ||
-			string.IsNullOrEmpty(
-				defeatProvinceId))
-		{
-			Debug.LogError(
-				"defeatProvince 未設定");
-
-			return;
-		}
-
-		//--------------------------------
-		// 存在チェック
-		//--------------------------------
-
-		if (!runtimeData.ContainsKey(
-			victoryProvinceId))
-		{
-			Debug.LogError(
-				"存在しない victoryProvince: "
-				+ victoryProvinceId);
-
-			return;
-		}
-
-		if (!runtimeData.ContainsKey(
-			defeatProvinceId))
-		{
-			Debug.LogError(
-				"存在しない defeatProvince: "
-				+ defeatProvinceId);
-
-			return;
-		}
-
-		//--------------------------------
-		// 取得
-		//--------------------------------
-
-		var victory =
-			runtimeData[
-				victoryProvinceId];
-
-		var defeat =
-			runtimeData[
-				defeatProvinceId];
-
-		//--------------------------------
-		// 勝利判定
-		//--------------------------------
-
-		if (victory.owner.baseData.factionId
-			== playerFactionId)
-		{
-			OnGameWin();
-			return;
-		}
-
-		//--------------------------------
-		// 敗北判定
-		//--------------------------------
-
-		if (defeat.owner.baseData.factionId
-			!= playerFactionId)
-		{
-			OnGameLose();
-			return;
-		}
+		victoryManager.CheckVictoryDefeat();
 	}
 
 	public void CheckCheckpointUnlocks()
 	{
-		foreach (var province
-			in runtimeData.Values)
-		{
-			if (!province.baseData.isGate)
-				continue;
-
-			if (province.isUnlocked)
-				continue;
-
-			//--------------------------------
-			// required null 対策（重要）
-			//--------------------------------
-
-			if (province.baseData.requiredProvinces == null)
-				continue;
-
-			if (province.baseData.requiredProvinces.Count == 0)
-				continue;
-
-			bool allCaptured = true;
-
-			Debug.Log("Test CheckCheckpointUnlocks " +
-				province.baseData.requiredProvinces.Count);
-
-			//--------------------------------
-			// 必須拠点チェック
-			//--------------------------------
-
-			foreach (var req
-				in province.baseData.requiredProvinces)
-			{
-				//--------------------------------
-				// req null 対策（重要）
-				//--------------------------------
-				//var reqProvince =
-				//runtimeData[req.provinceId];
-
-				//if (reqProvince.owner.baseData.factionId
-				//	!= playerFactionId)
-				//{
-				//	allCaptured = false;
-				//	break;
-				//}
-
-				if (req.provinceId == null)
-				{
-					Debug.LogError("req null");
-					allCaptured = false;
-					break;
-				}
-
-				//--------------------------------
-				// 空IDチェック（今回の原因）
-				//--------------------------------
-
-				if (string.IsNullOrEmpty(
-					req.provinceId))
-				{
-					Debug.LogError(
-						province.baseData.provinceName +
-						" provinceId が空");
-
-					continue;
-				}
-				//--------------------------------
-								// runtimeDataに存在するか
-								//--------------------------------
-
-				if (!runtimeData.ContainsKey(
-					req.provinceId))
-				{
-					Debug.LogError(
-						"存在しないprovinceId: " +
-						req.provinceId);
-
-					allCaptured = false;
-					break;
-				}
-
-				var reqProvince =
-					runtimeData[req.provinceId];
-
-				//--------------------------------
-				// ownerチェック（最重要）
-				//--------------------------------
-
-				if (reqProvince.owner == null)
-				{
-					Debug.LogError(
-						"owner null: " +
-						req);
-
-					allCaptured = false;
-					break;
-				}
-
-				//--------------------------------
-				// 所属チェック
-				//--------------------------------
-
-				if (reqProvince.owner.baseData == null)
-				{
-					Debug.LogError(
-						"owner.baseData null: " +
-						req);
-
-					allCaptured = false;
-					break;
-				}
-
-				if (reqProvince.owner.baseData.factionId
-					!= playerFactionId)
-				{
-					allCaptured = false;
-					break;
-				}
-			}
-
-			//--------------------------------
-			// 解放処理
-			//--------------------------------
-			if (allCaptured)
-			{
-				province.isUnlocked = true;
-				//UpdateAllNodeColors();
-
-				Debug.Log(
-					province.baseData.provinceName +
-					" が解放された！");
-			}
-		}
+		victoryManager.CheckCheckpointUnlocks();
 	}
 
-	public void OnConfirmAttack()
+	public void ConfirmAttackSub()
 	{
-		confirmAttackPanel.SetActive(false);
+		//confirmAttackPanel.SetActive(false);
 
 		battleManager.TryAttack(
 			pendingFrom,
 			pendingTarget,
 			pendingAttackers);
 
-	}
-	public void OnCancelAttack()
-	{
-		confirmAttackPanel.SetActive(false);
-
-		Debug.Log("攻撃キャンセル");
-	}
-
-	public void OnConfirmMove()
-	{
-		confirmMovePanel.SetActive(false);
-
-		MoveOneCharacter(
-			pendingFrom,
-			pendingTarget,
-			pendingAttackers);
-
-	}
-	public void OnCancelMove()
-	{
-		confirmMovePanel.SetActive(false);
-
-		Debug.Log("移動キャンセル");
-	}
-	public void OnEndTurnButton()
-	{
-		if (!isPlayerTurn)
-			return;
-
-		Debug.Log("プレイヤーターン終了");
-
-		isPlayerTurn = false;
-
-		StartEnemyTurn();
-	}
-
-
-	void OnGameWin()
-	{
-		Debug.Log("勝利！");
-		winPanel.SetActive(true);
-		isGameOver = true;
-	}
-	void OnGameLose()
-	{
-		Debug.Log("敗北…");
-		losePanel.SetActive(true);
-		isGameOver = true;
-	}
-	public void OnRetryButton()
-	{
-		Debug.Log("リトライ");
-
-		// 現在のシーンを取得
-		Scene currentScene =
-			SceneManager.GetActiveScene();
-
-		// シーン再読み込み
-		SceneManager.LoadScene(
-			currentScene.name);
 	}
 
 	public void OnConfirmAction()
@@ -1613,7 +993,53 @@ public class MapManager : MonoBehaviour
 		ResetSelection();
 	}
 
-	void ShowDevelopmentMenu(
+
+	public void OnConfirmMove()
+	{
+		provinceSelectionManager.OnConfirmMove();
+	}
+	public void OnCancelMove()
+	{
+		provinceSelectionManager.OnCancelMove();
+	}
+	public void OnEndTurnButton()
+	{
+		if (!isPlayerTurn)
+			return;
+
+		Debug.Log("プレイヤーターン終了");
+
+		isPlayerTurn = false;
+
+		StartEnemyTurn();
+	}
+
+	public void OnGameWin()
+	{
+		Debug.Log("勝利！");
+		winPanel.SetActive(true);
+		isGameOver = true;
+	}
+	public void OnGameLose()
+	{
+		Debug.Log("敗北…");
+		losePanel.SetActive(true);
+		isGameOver = true;
+	}
+	public void OnRetryButton()
+	{
+		Debug.Log("リトライ");
+
+		// 現在のシーンを取得
+		Scene currentScene =
+			SceneManager.GetActiveScene();
+
+		// シーン再読み込み
+		SceneManager.LoadScene(
+			currentScene.name);
+	}
+
+	public void ShowDevelopmentMenu(
 	ProvinceRuntimeData province)
 	{
 		Debug.Log(
@@ -1623,24 +1049,8 @@ public class MapManager : MonoBehaviour
 		// 仮：UI表示
 	}
 
-	void SetSelectedNode(
-	ProvinceNode node)
-	{
-		// 旧選択解除
-		if (selectedNode != null)
-		{
-			selectedNode.SetSelected(false);
-		}
 
-		selectedNode = node;
-
-		if (selectedNode != null)
-		{
-			selectedNode.SetSelected(true);
-		}
-	}
-
-	void ClearSelectedNode()
+	public void ClearSelectedNode()
 	{
 		if (selectedNode != null)
 		{
@@ -1650,7 +1060,7 @@ public class MapManager : MonoBehaviour
 		selectedNode = null;
 	}
 
-	void ClearAllHighlights()
+	public void ClearAllHighlights()
 	{
 		var allNodes =
 			FindObjectsOfType<ProvinceNode>();
@@ -1659,66 +1069,6 @@ public class MapManager : MonoBehaviour
 		{
 			node.ClearHighlight();
 		}
-	}
-
-	public ProvinceRuntimeData
-	GetProvinceById(
-		string provinceID)
-	{
-		foreach (var p
-			in runtimeData.Values)
-		{
-			if (p.baseData
-				.provinceName
-				== provinceID)
-			{
-				return p;
-			}
-		}
-
-		return null;
-	}
-
-	public FactionRuntimeData
-	GetFactionById(
-		string factionId)
-	{
-		foreach (var f
-			in factionRuntimeDataDict
-				.Values)
-		{
-			if (f.baseData
-				.factionId
-				== factionId)
-			{
-				return f;
-			}
-		}
-
-		return null;
-	}
-	public void OnClickSave()
-	{
-		SaveManager.Instance
-			.SaveGame(this);
-	}
-
-	public void OnClickLoad()
-	{
-		SaveManager.Instance
-			.LoadGame(this);
-	}
-
-	public IEnumerable<ProvinceRuntimeData>
-	GetAllProvinces()
-	{
-		return runtimeData.Values;
-	}
-
-	public IEnumerable<FactionRuntimeData>
-	GetAllFactions()
-	{
-		return factionRuntimeDataDict.Values;
 	}
 
 	void RegisterProvinceNodes()
@@ -1749,63 +1099,193 @@ public class MapManager : MonoBehaviour
 		}
 	}
 
-	ProvinceRuntimeData
-	GetProvinceRuntime(
-		string provinceId)
-	{
-		if (runtimeData
-			.TryGetValue(
-				provinceId,
-				out var runtime))
+	public IEnumerable<ProvinceRuntimeData>
+		GetAllProvinces()
 		{
-			return runtime;
+			return runtimeData.Values;
 		}
 
-		Debug.LogError(
-			"Province not found: "
-			+ provinceId);
+	public IEnumerable<FactionRuntimeData>
+		GetAllFactions()
+		{
+			return factionRuntimeDataDict.Values;
+		}
 
-		return null;
-	}
+	public FactionRuntimeData
+		GetFactionById(
+			string factionId)
+		{
+			foreach (var f
+				in factionRuntimeDataDict
+					.Values)
+			{
+				if (f.baseData
+					.factionId
+					== factionId)
+				{
+					return f;
+				}
+			}
+
+			return null;
+		}
+
+	public ProvinceRuntimeData
+		GetProvinceById(
+			string provinceID)
+		{
+			foreach (var p
+				in runtimeData.Values)
+			{
+				if (p.baseData
+					.provinceName
+					== provinceID)
+				{
+					return p;
+				}
+			}
+
+			return null;
+		}
+
+	public ProvinceRuntimeData
+		GetProvinceRuntime(
+			string provinceId)
+		{
+			if (runtimeData
+				.TryGetValue(
+					provinceId,
+					out var runtime))
+			{
+				return runtime;
+			}
+
+			Debug.LogError(
+				"Province not found: "
+				+ provinceId);
+
+			return null;
+		}
 
 	List<ProvinceRuntimeData>
-	GetEnemyProvinces()
-	{
-		List<ProvinceRuntimeData>
-			result =
-			new List<
-				ProvinceRuntimeData>();
-
-		foreach (var province
-			in runtimeData.Values)
+		GetEnemyProvinces()
 		{
-			// プレイヤー以外
-			if (province.owner.baseData.factionId
-				!= playerFactionId)
+			List<ProvinceRuntimeData>
+				result =
+				new List<
+					ProvinceRuntimeData>();
+
+			foreach (var province
+				in runtimeData.Values)
 			{
-				result.Add(province);
+				// プレイヤー以外
+				if (province.owner.baseData.factionId
+					!= Constants.playerFactionId)
+				{
+					result.Add(province);
+				}
 			}
+
+			return result;
 		}
 
-		return result;
+	public List<CharacterRuntimeData>
+		GetSelectedCharacters()
+		{
+			return selectedCharacters;
+		}
+
+	public void AddSelectedCharacters(
+		CharacterRuntimeData ch)
+	{
+		selectedCharacters.Add(ch);
+	}
+	public void RemoveSelectedCharacters(
+		CharacterRuntimeData ch)
+	{
+		selectedCharacters.Remove(ch);
 	}
 
 	public FactionRuntimeData
-	GetFaction(string factionId)
-	{
-		if (factionRuntimeDataDict
-			.TryGetValue(
-				factionId,
-				out var faction))
+		GetFaction(string factionId)
 		{
-			return faction;
+			if (factionRuntimeDataDict
+				.TryGetValue(
+					factionId,
+					out var faction))
+			{
+				return faction;
+			}
+
+			Debug.LogError(
+				"Faction not found: "
+				+ factionId);
+
+			return null;
 		}
 
-		Debug.LogError(
-			"Faction not found: "
-			+ factionId);
-
-		return null;
+	public bool GetisGameOver()
+	{
+		return isGameOver;
 	}
 
+	public bool GetisPlayerTurn()
+	{
+		return isPlayerTurn;
+	}
+	public void SetSelectedNode(
+	   ProvinceNode node)
+	{
+		// 旧選択解除
+		if (selectedNode != null)
+		{
+			selectedNode.SetSelected(false);
+		}
+
+		selectedNode = node;
+
+		if (selectedNode != null)
+		{
+			selectedNode.SetSelected(true);
+		}
+	}
+	public void SetSelectedNodeFlag(bool flag)
+	{
+		selectedNode.SetSelected(flag);
+	}
+	public ProvinceNode GetselectedNode()
+	{
+		return selectedNode;
+	}
+
+	public void SetselectedProvince(
+		ProvinceRuntimeData p)
+	{
+		selectedProvince = p;
+	}
+	public ProvinceRuntimeData GetselectedProvince()
+	{
+		return selectedProvince;
+	}
+
+	public void SettoNode(
+		ProvinceNode node)
+	{
+		toNode = node;
+	}
+	public ProvinceNode GettoNode()
+	{
+		return toNode;
+	}
+	public void SettoPrpvince(
+		ProvinceRuntimeData runtimeData)
+	{
+		toProvince = runtimeData;
+	}
+
+	public ProvinceNode[]
+		GetProvinceNodes()
+		{
+			return provinceNodes;
+		}
 }

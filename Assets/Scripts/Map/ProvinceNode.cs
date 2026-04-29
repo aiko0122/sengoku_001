@@ -155,9 +155,9 @@ public class ProvinceNode : MonoBehaviour
 			return;
 		}
 
-		Debug.Log("Test êF" +
-			faction.baseData.factionName +
-			faction.color);
+		//Debug.Log("Test êF" +
+		//	faction.baseData.factionName +
+		//	faction.color);
 
 		baseImage.color =
 			faction.color;
@@ -199,12 +199,12 @@ public class ProvinceNode : MonoBehaviour
 			SetHighlight(
 				selectedColor, 0.4f);
 
-			Debug.Log("selected = True");
+			//Debug.Log("selected = True");
 		}
 		else
 		{
 			SetHighlightAlpha(0f);
-			Debug.Log("selected = False");
+			//Debug.Log("selected = False");
 		}
 	}
 	public void SetMoveHighlight()

@@ -16,9 +16,9 @@ public static class CharacterFactory
 
 		if (master == null)
 		{
-			Debug.LogWarning(
-				"•«¶¬¸”s: " +
-				characterId);
+			//Debug.LogWarning(
+			//	"•«¶¬¸”s: " +
+			//	characterId);
 
 			return null;
 		}
@@ -48,9 +48,9 @@ public static class CharacterFactory
 		//		"Portraits/" +
 		//		master.portraitId);
 
-		Debug.Log(
-			"•«¶¬: " +
-			master.characterName);
+		//Debug.Log(
+		//	"•«¶¬: " +
+		//	master.characterName);
 
 		//--------------------------------
 		// Runtime¶¬

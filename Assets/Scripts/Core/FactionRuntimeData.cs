@@ -42,6 +42,6 @@ public class FactionRuntimeData
 			data.colorHex,
 			out color);
 
-		Debug.Log(color);
+		//Debug.Log(color);
 	}
 }

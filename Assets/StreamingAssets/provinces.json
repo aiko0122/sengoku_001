@@ -7,7 +7,7 @@
         "isGate": "False",
         "requiredProvinces": [],
 
-        "income": 100,
+        "initialIncome": 100,
         "defenseValue": "5",
         "initialDefenseLevel": "5",
 
@@ -28,7 +28,7 @@
         "isGate": "False",
         "requiredProvinces": [],
 
-        "income": 100,
+        "initialIncome": 100,
         "defenseValue": "5",
         "initialDefenseLevel": "2",
 
@@ -49,7 +49,7 @@
         "isGate": "False",
         "requiredProvinces": [],
 
-        "income": 100,
+        "initialIncome": 100,
         "defenseValue": "10",
         "initialDefenseLevel": "5",
 
@@ -69,7 +69,7 @@
         "isGate": "False",
         "requiredProvinces": [],
 
-        "income": 100,
+        "initialIncome": 100,
         "defenseValue": "5",
         "initialDefenseLevel": "5",
 
@@ -91,7 +91,7 @@
         "isGate": "False",
         "requiredProvinces": [],
 
-        "income": 100,
+        "initialIncome": 100,
         "defenseValue": "5",
         "initialDefenseLevel": "5",
 
@@ -116,7 +116,7 @@
             { "provinceId": "A-5" }
         ],
 
-        "income": 100,
+        "initialIncome": 100,
         "defenseValue": "20",
         "initialDefenseLevel": "7",
 
@@ -139,7 +139,7 @@
             { "provinceId": "A-6" }
         ],
 
-        "income": 100,
+        "initialIncome": 100,
         "defenseValue": "30",
         "initialDefenseLevel": "10",
 

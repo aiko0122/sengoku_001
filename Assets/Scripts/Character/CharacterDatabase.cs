@@ -73,9 +73,9 @@ public static class CharacterDatabase
 
 		characters = data.characters;
 
-		Debug.Log(
-			"Characters Loaded: "
-			+ characters.Count);
+		//Debug.Log(
+		//	"Characters Loaded: "
+		//	+ characters.Count);
 	}
 
 	//--------------------------------

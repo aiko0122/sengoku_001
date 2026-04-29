@@ -17,9 +17,9 @@ public class ProvinceDatabase
 				Application.streamingAssetsPath,
 				"provinces.json");
 
-		Debug.Log(
-			"Loading path: "
-			+ path);
+		//Debug.Log(
+		//	"Loading path: "
+		//	+ path);
 
 		string json =
 			File.ReadAllText(path);

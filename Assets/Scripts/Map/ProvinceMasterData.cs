@@ -14,7 +14,7 @@ public class ProvinceMasterData
 	public List<RequiredProvince>
 		requiredProvinces;
 
-	public int income;
+	public int initialIncome;
 	public int defenseValue;
 	public int initialDefenseLevel;
 

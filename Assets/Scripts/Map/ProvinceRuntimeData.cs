@@ -48,7 +48,7 @@ public class ProvinceRuntimeData
 	//public int defenseLevel = 1;
 	public int defense;
 	public int defenseLevel;
-
+	public int income;
 	//--------------------------------
 	// ロック状態
 	//--------------------------------
@@ -66,6 +66,7 @@ public class ProvinceRuntimeData
 
 		defense = baseData.defenseValue;
 		defenseLevel = baseData.initialDefenseLevel;
+		income = baseData.initialIncome;
 
 		// 通常地域は最初から解放
 		isUnlocked =
@@ -75,9 +76,9 @@ public class ProvinceRuntimeData
 		var characterList = baseData.initialCharacterIds;
 			//new List<CharacterRuntimeData>();
 
-		Debug.Log("Test Load " +
-			baseData.provinceName + "  " +
-			defenseLevel);
+		//Debug.Log("Test Load " +
+		//	baseData.provinceName + "  " +
+		//	defenseLevel);
 
 		// 初期所有者（仮）
 		//ownerFaction = "Neutral";
@@ -103,10 +104,10 @@ public class ProvinceRuntimeData
 
 		characterList.Add(ch);
 
-		Debug.Log(
-			baseData.provinceName +
-			" に追加：" +
-			ch.baseData.characterName);
+		//Debug.Log(
+		//	baseData.provinceName +
+		//	" に追加：" +
+		//	ch.baseData.characterName);
 
 		return true;
 	}
